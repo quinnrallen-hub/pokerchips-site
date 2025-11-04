@@ -1,0 +1,1023 @@
+<!-- poker-live-irl.html
+Single-file "one-device" Texas Hold'em helper for IRL cards.
+Usage: run in browser. Players use real cards; this app manages seats, blinds, pot, betting rounds, dealer button, community cards, and showdown.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Live IRL Texas Hold'em Helper</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;}
+    body{margin:0;padding:16px;background:#0f1724;color:#e6eef8;}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    h1{font-size:16px;margin:0}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    button,input,select{font-size:13px;padding:6px;border-radius:6px;border:1px solid #263142;background:#15232f;color:#e6eef8}
+    .table{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        min-height:160px;
+    }
+    .player-center{
+        background:#14202a;
+        padding:18px;
+        border-radius:10px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:10px;
+        min-width:320px;
+        box-shadow:0 6px 18px rgba(0,0,0,0.3);
+    }
+    .player-center .name{font-size:18px;font-weight:800;}
+    .player-center .meta{color:#9fb0c5;font-size:14px;}
+    .player-center .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .community{grid-column:1/-1;background:#0c1b24;padding:10px;border-radius:8px;display:flex;gap:8px;align-items:center;justify-content:center}
+    .card{width:56px;height:80px;border-radius:6px;background:#08202a;display:flex;align-items:center;justify-content:center;color:#9fb0c5;border:1px solid #173241;font-weight:700}
+    .card.spades,.card.clubs{color:#e6eef8}
+    .card.hearts,.card.diamonds{color:#ff6b6b}
+    .card-inner{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:4px;
+        font-family:monospace;
+    }
+    .card-rank{font-size:16px;font-weight:800}
+    .card-suit{font-size:24px}
+    .card.editable{cursor:pointer}
+    .status{background:#072530;padding:8px;border-radius:6px;font-size:13px;color:#bfe3ff}
+    .big{font-size:20px}
+    .compact{font-size:12px}
+    .folded{opacity:0.45;text-decoration:line-through}
+    .dealer{background:#ffd166;color:#072530;padding:2px 6px;border-radius:6px;font-weight:700;font-size:12px}
+
+    /* highlight seat to act */
+    .seat.to-act{
+        border: 1px solid #ffd166;
+        box-shadow: 0 6px 18px rgba(255,209,102,0.06), 0 0 0 4px rgba(255,209,102,0.06);
+        transform: translateY(-2px) scale(1.01);
+        transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    }
+    .seat .to-act-badge{
+        margin-top:8px;
+        display:inline-block;
+        background:#ffd166;
+        color:#072530;
+        padding:2px 8px;
+        border-radius:999px;
+        font-weight:700;
+        font-size:12px;
+    }
+
+    /* center "To act" badge inside community */
+    .to-act-center{
+        display:none; /* hidden when no action */
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        background:#ffd166;
+        color:#072530;
+        padding:8px 14px;
+        border-radius:999px;
+        font-weight:800;
+        font-size:14px;
+        box-shadow:0 6px 18px rgba(255,209,102,0.08);
+        margin-left:12px;
+    }
+
+    /* chips summary at bottom */
+    .chips-summary{
+        margin-top:10px;
+        background:#06121a;
+        padding:10px;
+        border-radius:8px;
+        color:#bfe3ff;
+        font-size:13px;
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+        align-items:center;
+        justify-content:center;
+    }
+    .chips-pill{
+        background:#072530;
+        padding:6px 10px;
+        border-radius:999px;
+        color:#bfe3ff;
+        font-weight:700;
+        font-size:13px;
+        border:1px solid rgba(127,184,211,0.06);
+    }
+    .hosting-container{
+        display:none;
+        margin-top:8px;
+        padding:8px;
+        background:#0a1520;
+        border-radius:6px;
+        border:1px solid #263142;
+    }
+    .hosting-container.visible{
+        display:block;
+    }
+    .your-turn-badge{
+        display:inline-block;
+        background:#10b981;
+        color:#fff;
+        padding:8px 16px;
+        border-radius:8px;
+        font-weight:800;
+        font-size:16px;
+        margin-bottom:12px;
+        box-shadow:0 4px 12px rgba(16,185,129,0.3);
+        animation:pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+</style>
+</head>
+<body>
+<header>
+    <h1>Live IRL Texas Hold'em — Single-device helper</h1>
+    <div class="controls">
+        <input id="playerName" placeholder="Player name" />
+        <input id="playerChips" placeholder="Chips" type="number" min="1" style="width:84px"/>
+        <button id="addPlayer">Add</button>
+        <select id="seatCount">
+            <option>6</option>
+            <option>7</option>
+            <option selected>8</option>
+            <option>9</option>
+        </select>
+        <button id="reset">Reset Table</button>
+    </div>
+</header>
+
+<div class="status" id="status">No hand started</div>
+
+<div class="table" id="table"></div>
+
+<div style="height:10px"></div>
+
+<div class="community" id="community">
+    <div style="text-align:center">
+        <div class="compact">Pot</div>
+        <div class="big" id="pot">0</div>
+    </div>
+
+    <!-- community cards -->
+    <div style="display:flex;gap:8px">
+        <div class="card editable" data-index="0" id="c0">—</div>
+        <div class="card editable" data-index="1" id="c1">—</div>
+        <div class="card editable" data-index="2" id="c2">—</div>
+        <div class="card editable" data-index="3" id="c3">—</div>
+        <div class="card editable" data-index="4" id="c4">—</div>
+    </div>
+
+    <!-- central "to act" indicator -->
+    <div style="display:flex;align-items:center;margin-left:12px">
+        <div id="toActCenter" class="to-act-center"></div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+        <div style="display:flex;flex-direction:column;justify-content:center">
+            <label style="font-size:12px"><input type="checkbox" id="autoDeal" /> Auto-deal cards</label>
+            <label style="font-size:12px;margin-top:4px"><input type="checkbox" id="enableNetwork" /> Enable network play</label>
+            <div id="hostingContainer" class="hosting-container">
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <button id="hostGame" style="font-size:12px">Host Game</button>
+                    <input id="joinCode" placeholder="Room Code" style="width:100px;font-size:12px" />
+                    <button id="joinGame" style="font-size:12px">Join</button>
+                </div>
+                <div id="networkStatus" style="font-size:12px;color:#9fb0c5;margin-top:4px"></div>
+            </div>
+        </div>
+        <div><div class="compact">Blinds</div><input id="sb" type="number" value="10" style="width:72px"/><input id="bb" type="number" value="20" style="width:72px"/></div>
+    </div>
+</div>
+
+<footer>
+    <div style="display:flex;gap:8px">
+        <button id="startHand">Start Hand</button>
+        <button id="nextStage">Next Stage</button>
+        <button id="clearBoard">Clear Board</button>
+        <button id="collectPot">Collect Pot (awarded)</button>
+    </div>
+    <div style="display:flex;gap:8px">
+        <button id="undo">Undo Action</button>
+        <button id="export">Export (JSON)</button>
+    </div>
+</footer>
+
+<!-- chips summary container -->
+<div id="chipsSummary" class="chips-summary" aria-live="polite"></div>
+
+<script>
+/*
+ Simple single-device Texas Hold'em helper.
+ - Designed for IRL cards (deckMode="irl") but supports auto dealing if desired.
+ - Tracks seats, chips, blinds, pot, betting rounds, dealer button.
+ - Users reveal hole cards by typing them into the "notes" field or by toggling reveal at showdown.
+*/
+
+const tableEl = document.getElementById('table');
+const statusEl = document.getElementById('status');
+const potEl = document.getElementById('pot');
+const addPlayerBtn = document.getElementById('addPlayer');
+const playerNameInput = document.getElementById('playerName');
+const playerChipsInput = document.getElementById('playerChips');
+const resetBtn = document.getElementById('reset');
+const startHandBtn = document.getElementById('startHand');
+const nextStageBtn = document.getElementById('nextStage');
+const clearBoardBtn = document.getElementById('clearBoard');
+const collectPotBtn = document.getElementById('collectPot');
+const exportBtn = document.getElementById('export');
+const undoBtn = document.getElementById('undo');
+const seatCountSelect = document.getElementById('seatCount');
+const sbInput = document.getElementById('sb');
+const bbInput = document.getElementById('bb');
+const autoDealInput = document.getElementById('autoDeal');
+const hostGameBtn = document.getElementById('hostGame');
+const joinGameBtn = document.getElementById('joinGame');
+const joinCodeInput = document.getElementById('joinCode');
+const networkStatusEl = document.getElementById('networkStatus');
+const enableNetworkInput = document.getElementById('enableNetwork');
+const hostingContainerEl = document.getElementById('hostingContainer');
+
+let state = {
+    seatCount: parseInt(seatCountSelect.value,10),
+    seats: [], // {id,name,chips,bet,folded,active,manualHole,shown}
+    dealer: 0,
+    stage: 'idle', // idle, preflop, flop, turn, river, showdown
+    community: ['','','','',''],
+    pot: 0,
+    currentBet: 0,
+    toAct: null,
+    bigBlind: parseInt(bbInput.value,10),
+    smallBlind: parseInt(sbInput.value,10),
+    history: []
+};
+
+// PeerJS network sync variables
+let peer = null;
+let isHost = false;
+let roomCode = null;
+let connections = []; // host keeps track of all client connections
+let mySeat = null; // which seat number belongs to this client
+let disableSyncOnRender = false;
+ 
+function seedSeats(count){
+    state.seatCount = count;
+    // create empty slots but place dealer (you) at seat 0
+    state.seats = new Array(count).fill(null);
+    state.seats[0] = {id:0, name: 'Dealer (You)', chips:1000, bet:0, folded:false, active:true, manualHole:'', shown:false};
+    state.dealer = 0;
+    render();
+}
+ 
+function renderCard(card) {
+    if (!card || card === '—') return '—';
+    
+    const rank = card[0].toUpperCase();
+    const suit = card[1].toLowerCase();
+    
+    let suitChar = '?';
+    let suitClass = '';
+    
+    switch(suit) {
+        case 'h': suitChar = '♥'; suitClass = 'hearts'; break;
+        case 'd': suitChar = '♦'; suitClass = 'diamonds'; break;
+        case 's': suitChar = '♠'; suitClass = 'spades'; break;
+        case 'c': suitChar = '♣'; suitClass = 'clubs'; break;
+    }
+    
+    return `<div class="card-inner"><div class="card-rank">${rank}</div><div class="card-suit">${suitChar}</div></div>`;
+}
+
+function render(){
+    // show single centered player to act (or message)
+    tableEl.innerHTML = '';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'player-center';
+
+    // Determine which seat to display
+    const networkMode = enableNetworkInput.checked && mySeat !== null;
+    // In network mode, show your seat. Otherwise show toAct, or seat 0 if no action
+    const displaySeat = networkMode ? mySeat : (state.toAct !== null ? state.toAct : 0);
+
+    if(displaySeat !== null && displaySeat !== undefined && state.seats[displaySeat]){
+        const s = state.seats[displaySeat];
+
+        // Add "Your Turn" badge if network mode and it's your turn
+        if(networkMode && state.toAct === mySeat){
+            const yourTurnBadge = document.createElement('div');
+            yourTurnBadge.className = 'your-turn-badge';
+            yourTurnBadge.textContent = '🎯 YOUR TURN';
+            wrapper.appendChild(yourTurnBadge);
+        }
+
+        // player header
+        const name = document.createElement('div');
+        name.className = 'name';
+        if(networkMode){
+            name.textContent = (s.name || `Seat ${displaySeat}`) + ' (You)';
+        } else {
+            name.textContent = s.name || `Seat ${displaySeat}`;
+        }
+        wrapper.appendChild(name);
+
+        // meta (chips / bet)
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = `Chips: ${s.chips} • Bet: ${s.bet}`;
+        wrapper.appendChild(meta);
+
+        // hole note - updated to hide cards unless folded/showdown OR if it's your seat in network mode
+        const hole = document.createElement('div');
+        hole.style.fontSize = '13px';
+        if(s.manualHole && autoDealInput.checked) {
+            const showCards = networkMode || s.folded || state.stage === 'showdown';
+            if(showCards) {
+                const [card1, card2] = s.manualHole.split(' ');
+                hole.innerHTML = `Hole: <div style="display:inline-flex;gap:4px;margin-left:4px">
+                    <div class="card ${card1[1].toLowerCase() === 'h' ? 'hearts' :
+                                    card1[1].toLowerCase() === 'd' ? 'diamonds' :
+                                    card1[1].toLowerCase() === 's' ? 'spades' :
+                                    card1[1].toLowerCase() === 'c' ? 'clubs' : ''}" style="width:24px;height:32px">
+                        ${renderCard(card1)}
+                    </div>
+                    <div class="card ${card2[1].toLowerCase() === 'd' ? 'diamonds' :
+                                    card2[1].toLowerCase() === 'h' ? 'hearts' :
+                                    card2[1].toLowerCase() === 's' ? 'spades' :
+                                    card2[1].toLowerCase() === 'c' ? 'clubs' : ''}" style="width:24px;height:32px">
+                        ${renderCard(card2)}
+                    </div>
+                </div>`;
+            } else {
+                hole.textContent = 'Hole: (Hidden)';
+            }
+        } else {
+            hole.textContent = 'Hole: (IRL)';
+        }
+        wrapper.appendChild(hole);
+
+        // actions (use existing createBtn)
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const btnFold = createBtn('Fold', ()=>playerAction(displaySeat,'fold'));
+        const btnCheck = createBtn('Check', ()=>playerAction(displaySeat,'check'));
+        const btnCall = createBtn('Call', ()=>playerAction(displaySeat,'call'));
+        const btnRaise = createBtn('Raise', ()=>playerRaisePrompt(displaySeat));
+        const btnEdit = createBtn('Edit', ()=>editSeat(displaySeat));
+        const btnDealer = createBtn('Set Dealer', ()=>setDealer(displaySeat));
+        const btnPost = createBtn('Post SB/BB', ()=>postBlind(displaySeat));
+
+        // disable if not clickable (defensive)
+        const canAct = networkMode ? (state.toAct === mySeat) : (state.toAct !== null);
+        btnFold.disabled = !canAct;
+        btnCheck.disabled = !canAct;
+        btnCall.disabled = !canAct;
+        btnRaise.disabled = !canAct;
+
+        actions.appendChild(btnFold);
+        actions.appendChild(btnCheck);
+        actions.appendChild(btnCall);
+        actions.appendChild(btnRaise);
+
+        // Only show admin buttons in non-network mode or if you're the host
+        if(!networkMode || isHost) {
+            actions.appendChild(btnEdit);
+            actions.appendChild(btnDealer);
+            actions.appendChild(btnPost);
+        }
+
+        wrapper.appendChild(actions);
+    } else {
+        const msg = document.createElement('div');
+        msg.className = 'name';
+        if(networkMode) {
+            msg.textContent = 'Waiting for game...';
+        } else {
+            msg.textContent = 'No one to act';
+        }
+        wrapper.appendChild(msg);
+
+        const sub = document.createElement('div');
+        sub.className = 'meta';
+        if(networkMode) {
+            sub.textContent = 'Wait for the host to start the hand.';
+        } else {
+            sub.textContent = 'Add players or start a hand to set action.';
+        }
+        wrapper.appendChild(sub);
+    }
+
+    tableEl.appendChild(wrapper);
+
+    // update community cards
+    for(let i=0;i<5;i++){
+        const el = document.getElementById('c'+i);
+        if(el) {
+            if(autoDealInput.checked) {
+                el.innerHTML = renderCard(state.community[i]);
+                el.className = `card editable ${state.community[i] ? state.community[i][1].toLowerCase() === 'h' ? 'hearts' : 
+                                                                    state.community[i][1].toLowerCase() === 'd' ? 'diamonds' :
+                                                                    state.community[i][1].toLowerCase() === 's' ? 'spades' : 
+                                                                    state.community[i][1].toLowerCase() === 'c' ? 'clubs' : '' : ''}`;
+            } else {
+                el.innerHTML = ''; // Hide card spots when auto-deal is off
+                el.className = 'card';
+                el.style.display = 'none';
+            }
+            el.onclick = () => editCommunityCard(i);
+        }
+    }
+
+    // update central "to act" badge in community area (keeps previous center indicator)
+    const center = document.getElementById('toActCenter');
+    if(center){
+        if(state.toAct !== null && state.seats[state.toAct]){
+            center.textContent = `To act — ${state.seats[state.toAct].name}`;
+            center.style.display = 'inline-flex';
+        } else {
+            center.textContent = '';
+            center.style.display = 'none';
+        }
+    }
+
+    potEl.textContent = state.pot;
+
+    // Update status text
+    if(networkMode && state.toAct !== null && state.seats[state.toAct]) {
+        const actingPlayer = state.seats[state.toAct].name || `Seat ${state.toAct}`;
+        const isYourTurn = state.toAct === mySeat;
+        statusEl.textContent = `Stage: ${state.stage} • ${isYourTurn ? '🎯 YOUR TURN' : 'Waiting for ' + actingPlayer} • Current bet: ${state.currentBet}`;
+    } else {
+        statusEl.textContent = `Stage: ${state.stage} • To act: ${state.toAct===null?'-':state.toAct} • Current bet: ${state.currentBet}`;
+    }
+
+    // update bottom chips summary
+    const chipsEl = document.getElementById('chipsSummary');
+    if(chipsEl){
+        const items = (state.seats || [])
+            .map((s,i) => s ? {label: s.name, chips: s.chips} : null)
+            .filter(Boolean);
+        if(items.length){
+            chipsEl.innerHTML = items.map(it => `<div class="chips-pill">${it.label}: ${it.chips}</div>`).join('');
+        } else {
+            chipsEl.innerHTML = `<div class="chips-pill">No players</div>`;
+        }
+    }
+}
+
+function createBtn(label,fn){
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.onclick = fn;
+    return b;
+}
+
+function addPlayer(){
+    // Allow multiple names (comma or newline separated) and add each to the next available seat.
+    const namesRaw = (playerNameInput.value||'').trim();
+    const chips = Math.max(0, parseInt(playerChipsInput.value||1000,10));
+
+    if(!namesRaw){
+        alert('Enter at least one player name (comma or newline separated to add multiple).');
+        return;
+    }
+
+    const names = namesRaw.split(/[\n,]+/).map(s=>s.trim()).filter(Boolean);
+    let added = 0;
+
+    for(const name of names){
+        let placed = false;
+        for(let i=0;i<state.seatCount;i++){
+            const s = state.seats[i];
+            // treat slot as empty only if it is null/undefined
+            const emptySeat = (!s);
+            if(emptySeat){
+                state.seats[i] = {id:i,name:name,chips,bet:0,folded:false,active:true,manualHole:'',shown:false};
+                added++;
+                placed = true;
+                break;
+            }
+        }
+        if(!placed) break; // no more seats available
+    }
+
+    if(added === 0){
+        alert('No empty seat. Use Reset Table to change seat count or edit an existing seat.');
+        return;
+    }
+
+    // clear input for convenience
+    playerNameInput.value = '';
+    render();
+}
+
+// add Enter key handling for quick add
+playerNameInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+        e.preventDefault();
+        addPlayer();
+    }
+});
+
+function setDealer(i){
+    state.dealer = i;
+    logHistory(`Set dealer to seat ${i}`);
+    render();
+}
+
+function postBlind(i){
+    const sb = parseInt(sbInput.value,10);
+    const bb = parseInt(bbInput.value,10);
+    const role = (i===((state.dealer+1)%state.seatCount)) ? 'SB' : (i===((state.dealer+2)%state.seatCount)) ? 'BB' : null;
+    if(!role) { alert('Only dealer+1 (SB) or dealer+2 (BB) should post blinds'); return;}
+    const amt = role==='SB'?sb:bb;
+    const seat = state.seats[i];
+    const paid = Math.min(seat.chips,amt);
+    seat.chips -= paid;
+    seat.bet += paid;
+    state.pot += paid;
+    if(paid>state.currentBet) state.currentBet = paid;
+    logHistory(`Seat ${i} posted ${role} ${paid}`);
+    render();
+}
+ 
+function startHand(){
+    // require at least 2 active players
+    const active = state.seats.filter(s=>s && s.active && !s.folded && s.chips>0);
+    if(active.length<2){ alert('At least 2 players with chips required'); return; }
+    state.currentBet = 0;
+    state.pot = 0;
+    state.community = ['','','','',''];
+    state.stage = 'preflop';
+    // reset bets/folds
+    state.seats.forEach(s=>{ if(s){ s.bet=0; s.folded=false; s.shown=false; }});
+    // blinds auto-post only if user chooses (helpful)
+    // set toAct to first active seat after BB
+    const bbPos = (state.dealer+2)%state.seatCount;
+    const firstToAct = findNextActive((bbPos+1)%state.seatCount);
+    state.toAct = firstToAct;
+    // Auto-deal if enabled
+    if(autoDealInput.checked){
+        autoDeal();
+    }
+    logHistory('Hand started');
+    render();
+}
+
+function findNextActive(start){
+    for(let i=0;i<state.seatCount;i++){
+        const idx=(start+i)%state.seatCount;
+        const s = state.seats[idx];
+        if(s && s.active && !s.folded && s.chips>0) return idx;
+    }
+    return null;
+}
+
+function playerAction(i,action){
+    if(state.toAct===null){ alert('No action required right now'); return; }
+    if(i!==state.toAct){ alert(`It's not seat ${i}'s turn`); return;}
+    const seat = state.seats[i];
+    if(action==='fold'){
+        seat.folded = true;
+        logHistory(`Seat ${i} folded`);
+    } else if(action==='check'){
+        if(state.currentBet > seat.bet){ alert('Cannot check when facing a bet'); return; }
+        logHistory(`Seat ${i} checked`);
+    } else if(action==='call'){
+        const need = state.currentBet - seat.bet;
+        const paid = Math.min(need, seat.chips);
+        seat.chips -= paid;
+        seat.bet += paid;
+        state.pot += paid;
+        logHistory(`Seat ${i} called ${paid}`);
+    }
+    // advance to next player and check if betting round complete
+    advanceTurn();
+    render();
+    checkBettingComplete();
+}
+
+function playerRaisePrompt(i){
+    // Prevent out-of-turn raises
+    if(state.toAct === null){ alert('No action required right now'); return; }
+    if(i !== state.toAct){ alert(`It's not seat ${i}'s turn`); return; }
+
+    const max = state.seats[i].chips + state.seats[i].bet;
+    const r = prompt('Enter raise total (must be > current bet). Enter 0 to cancel.', state.currentBet + Math.max(parseInt(bbInput.value,10),1));
+    if(!r) return;
+    const total = parseInt(r,10);
+    if(isNaN(total) || total<=state.currentBet){ alert('Invalid raise'); return; }
+    playerRaise(i,total);
+}
+
+function playerRaise(i,total){
+    // Defensive check for out-of-turn calls
+    if(state.toAct === null){ alert('No action required right now'); return; }
+    if(i !== state.toAct){ alert(`It's not seat ${i}'s turn`); return; }
+
+    const seat = state.seats[i];
+    const need = total - seat.bet;
+    if(need > seat.chips){ alert('Not enough chips'); return; }
+    seat.chips -= need;
+    seat.bet += need;
+    state.pot += need;
+    state.currentBet = seat.bet;
+    logHistory(`Seat ${i} raised to ${total}`);
+    // next to act is following player
+    state.toAct = findNextActive((i+1)%state.seatCount);
+    render();
+}
+
+function advanceTurn(){
+    const next = findNextActive((state.toAct+1)%state.seatCount);
+    state.toAct = next;
+}
+
+function checkBettingComplete(){
+    // betting complete if all active players either folded or have bet equal to currentBet or are all-in
+    const active = state.seats.filter(s=>s && s.active && !s.folded && (s.chips>0 || s.bet>0));
+    if(active.length<=1){
+        // single winner scenario
+        statusEl.textContent = 'Hand ends (single winner). Use Collect Pot to award.';
+        state.toAct = null;
+        return;
+    }
+    const unfinished = active.find(s=> (s.bet < state.currentBet) && s.chips>0 );
+    if(!unfinished){
+        // move to next stage automatically?
+        statusEl.textContent = 'Betting round complete. Click Next Stage to continue.';
+        state.toAct = null;
+    }
+}
+
+function nextStage(){
+     const order = ['preflop','flop','turn','river','showdown'];
+     const idx = order.indexOf(state.stage);
+     if(idx<0){ alert('No hand in progress'); return; }
+     if(state.stage==='showdown'){ alert('Already at showdown'); return; }
+     const next = order[idx+1];
+     state.stage = next;
+     // clear per-player bets and set toAct to first active after dealer for new betting rounds
+     state.seats.forEach(s=>{ if(s) s.bet = 0; });
+     state.currentBet = 0;
+     state.toAct = findNextActive((state.dealer+1)%state.seatCount);
+
+    // Auto-deal community cards if enabled
+    if(autoDealInput.checked){
+        const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+        const suits = ['h','d','c','s'];
+        function randomCard(){ 
+            return ranks[Math.floor(Math.random()*ranks.length)] + 
+                   suits[Math.floor(Math.random()*suits.length)]; 
+        }
+        if(next === 'flop'){
+            state.community[0] = randomCard();
+            state.community[1] = randomCard();
+            state.community[2] = randomCard();
+            logHistory('Auto-dealt flop');
+        } else if(next === 'turn'){
+            state.community[3] = randomCard();
+            logHistory('Auto-dealt turn');
+        } else if(next === 'river'){
+            state.community[4] = randomCard();
+            logHistory('Auto-dealt river');
+        }
+    }
+
+     logHistory(`Moved to ${next}`);
+     render();
+ }
+ 
+ function clearBoard(){
+     state.community = ['','','','',''];
+     render();
+ }
+ 
+ function collectPot(){
+    const winner = prompt('Seat number to award pot to (e.g. 0). Leave blank to cancel.');
+    if(winner==null || winner==='') return;
+    const i = parseInt(winner,10);
+    if(isNaN(i) || !state.seats[i]){ alert('Invalid seat'); return; }
+    state.seats[i].chips += state.pot;
+    logHistory(`Pot ${state.pot} awarded to seat ${i}`);
+    state.pot = 0;
+    state.stage = 'idle';
+    state.toAct = null;
+    render();
+ }
+
+ function editSeat(i){
+    // If slot empty, create new player; otherwise edit existing
+    let s = state.seats[i];
+    if(!s){
+        const name = prompt('Name for new player', `Player ${i+1}`);
+        if(name==null || name.trim()==='') return;
+        const chipsVal = parseInt(prompt('Chips', playerChipsInput.value || '1000'),10);
+        const chips = isNaN(chipsVal) ? 1000 : chipsVal;
+        const hole = prompt('Manual hole (for IRL, e.g. "Ah Kh")', '');
+        state.seats[i] = {id:i, name: name.trim(), chips, bet:0, folded:false, active:true, manualHole: hole||'', shown:false};
+        render();
+        return;
+    }
+    const name = prompt('Name', s.name);
+    if(name==null) return;
+    const chips = parseInt(prompt('Chips', s.chips),10);
+    if(isNaN(chips)) return;
+    const hole = prompt('Manual hole (for IRL, e.g. "Ah Kh")', s.manualHole);
+    s.name = name;
+    s.chips = chips;
+    s.manualHole = hole||'';
+    render();
+ }
+
+ function editCommunityCard(i){
+     const cur = state.community[i] || '';
+     const v = prompt('Set community card (e.g. Ah, Td) — leave blank to clear', cur);
+     if(v===null) return;
+     state.community[i] = (v||'').trim();
+     logHistory(`Set community card ${i} -> ${state.community[i]}`);
+     render();
+ }
+ 
+ function autoDeal(){
+    // simple auto dealing with basic duplicate prevention
+    const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+    const suits = ['h','d','c','s'];
+    const deck = [];
+    // build deck
+    for(const r of ranks) for(const s of suits) deck.push(r+s);
+    // Fisher-Yates shuffle
+    for(let i=deck.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [deck[i],deck[j]] = [deck[j],deck[i]];
+    }
+    // deal to active players
+    let cardIdx = 0;
+    state.seats.forEach(s => {
+        if(s && s.active && !s.folded && s.chips>0){
+            s.manualHole = `${deck[cardIdx]} ${deck[cardIdx+1]}`;
+            cardIdx += 2;
+        }
+    });
+    logHistory('Auto-dealt hole cards');
+ }
+ 
+ function setSeatCount(){
+    const c = parseInt(seatCountSelect.value,10);
+    if(!confirm('Reset table seats? This will clear seats.')) return;
+    seedSeats(c);
+ }
+ 
+ function resetTable(){
+    if(!confirm('Reset full table?')) return;
+    seedSeats(parseInt(seatCountSelect.value,10));
+    state.pot = 0;
+    state.stage = 'idle';
+    state.history = [];
+    render();
+ }
+ 
+ function exportJSON(){
+    const data = JSON.stringify(state,null,2);
+    prompt('Copy JSON', data);
+ }
+ 
+ function logHistory(msg){
+    const ts = new Date().toISOString();
+    state.history.push({ts,msg,stateSnapshot:serializeState()});
+ }
+
+ function serializeState(){
+    return {
+        seats: state.seats.map(s => s ? {name:s.name,chips:s.chips,bet:s.bet,folded:s.folded,manualHole:s.manualHole} : null),
+        dealer: state.dealer,stage:state.stage,community:state.community.slice(),pot:state.pot,currentBet:state.currentBet
+    };
+ }
+
+ function undo(){
+    if(state.history.length<=0){ alert('Nothing to undo'); return; }
+    state.history.pop();
+    // cannot easily revert to previous snapshot reliably in this simple helper — inform user
+    alert('Undo removed last history entry. To fully revert, export JSON from history snapshots (not implemented).');
+ }
+
+addPlayerBtn.onclick = addPlayer;
+resetBtn.onclick = resetTable;
+startHandBtn.onclick = startHand;
+nextStageBtn.onclick = nextStage;
+clearBoardBtn.onclick = clearBoard;
+collectPotBtn.onclick = collectPot;
+exportBtn.onclick = exportJSON;
+undoBtn.onclick = undo;
+seatCountSelect.onchange = setSeatCount;
+bbInput.onchange = ()=> state.bigBlind = parseInt(bbInput.value,10);
+sbInput.onchange = ()=> state.smallBlind = parseInt(sbInput.value,10);
+ 
+seedSeats(state.seatCount);
+render();
+
+/* Notes for use:
+ - This app is a helper for live in-person poker. Players use physical cards; use "Edit" to note hole cards when revealed.
+ - Post blinds using "Post SB/BB" buttons on the appropriate seats or set them manually.
+ - Use actions to manage betting; the app does not enforce every poker rule (this is a lightweight helper).
+ - For fully automatic dealing, select "Auto deck" before starting the hand.
+*/
+
+// Add handler for auto-deal toggle to update display immediately
+autoDealInput.onchange = () => {
+    const cardElements = document.querySelectorAll('.card');
+    cardElements.forEach(el => {
+        if(autoDealInput.checked) {
+            el.style.display = 'flex';
+            el.innerHTML = el.getAttribute('data-card') || '—';
+        } else {
+            el.style.display = 'none';
+            el.setAttribute('data-card', el.innerHTML);
+            el.innerHTML = '';
+        }
+    });
+
+    // Clear auto-dealt cards from state when disabling
+    if(!autoDealInput.checked) {
+        state.seats.forEach(s => { if(s) s.manualHole = ''; });
+        state.community = ['','','','',''];
+    }
+};
+
+// Add handler for network toggle to show/hide hosting menu
+enableNetworkInput.onchange = () => {
+    if(enableNetworkInput.checked) {
+        hostingContainerEl.classList.add('visible');
+    } else {
+        hostingContainerEl.classList.remove('visible');
+        // Disconnect if connected
+        if(peer) {
+            connections.forEach(conn => conn.close());
+            peer.destroy();
+            peer = null;
+            connections = [];
+            isHost = false;
+            roomCode = null;
+            mySeat = null;
+            networkStatusEl.textContent = '';
+        }
+        render(); // Re-render to show normal view
+    }
+};
+
+// PeerJS network sync setup
+function initHost() {
+    // Generate a random room code
+    roomCode = Math.random().toString(36).substring(2,8).toUpperCase();
+
+    // Create a peer with the room code as ID
+    peer = new Peer('poker-' + roomCode, {
+        debug: 0
+    });
+
+    peer.on('open', (id) => {
+        isHost = true;
+        mySeat = 0; // Host is always seat 0
+        networkStatusEl.textContent = `Hosting - Room: ${roomCode}`;
+        networkStatusEl.style.color = '#4ade80';
+        render(); // Update UI to show your seat
+    });
+
+    peer.on('connection', (conn) => {
+        connections.push(conn);
+
+        conn.on('open', () => {
+            // Send current state to new player
+            conn.send({
+                type: 'sync',
+                state: state
+            });
+            networkStatusEl.textContent = `Hosting - Room: ${roomCode} (${connections.length} clients)`;
+        });
+
+        conn.on('close', () => {
+            connections = connections.filter(c => c !== conn);
+            networkStatusEl.textContent = `Hosting - Room: ${roomCode} (${connections.length} clients)`;
+        });
+
+        conn.on('error', (err) => {
+            console.error('Connection error:', err);
+        });
+    });
+
+    peer.on('error', (err) => {
+        console.error('Peer error:', err);
+        networkStatusEl.textContent = `Error: ${err.type}`;
+        networkStatusEl.style.color = '#ff6b6b';
+    });
+}
+
+function joinGame() {
+    const code = joinCodeInput.value.trim().toUpperCase();
+    if(!code) {
+        alert('Please enter a room code');
+        return;
+    }
+
+    // Ask which seat they are
+    const seatInput = prompt('Which seat number are you? (0-' + (state.seatCount - 1) + ')');
+    if(seatInput === null) return;
+    const seatNum = parseInt(seatInput, 10);
+    if(isNaN(seatNum) || seatNum < 0 || seatNum >= state.seatCount) {
+        alert('Invalid seat number');
+        return;
+    }
+    mySeat = seatNum;
+
+    roomCode = code;
+
+    // Create a peer (client doesn't need a specific ID)
+    peer = new Peer({
+        debug: 0
+    });
+
+    peer.on('open', () => {
+        networkStatusEl.textContent = `Connecting to room: ${roomCode}...`;
+        networkStatusEl.style.color = '#fbbf24';
+
+        // Connect to the host
+        const conn = peer.connect('poker-' + roomCode);
+
+        conn.on('open', () => {
+            networkStatusEl.textContent = `Connected to room: ${roomCode}`;
+            networkStatusEl.style.color = '#4ade80';
+            connections.push(conn);
+            render(); // Update UI to show your seat
+        });
+
+        conn.on('data', (data) => {
+            if(data.type === 'sync') {
+                state = data.state;
+                const originalRenderFlag = disableSyncOnRender;
+                disableSyncOnRender = true; // prevent syncing back
+                render();
+                disableSyncOnRender = originalRenderFlag;
+            }
+        });
+
+        conn.on('close', () => {
+            networkStatusEl.textContent = `Disconnected from room: ${roomCode}`;
+            networkStatusEl.style.color = '#ff6b6b';
+            connections = [];
+        });
+
+        conn.on('error', (err) => {
+            console.error('Connection error:', err);
+            networkStatusEl.textContent = `Failed to connect to room: ${roomCode}`;
+            networkStatusEl.style.color = '#ff6b6b';
+        });
+    });
+
+    peer.on('error', (err) => {
+        console.error('Peer error:', err);
+        networkStatusEl.textContent = `Error: ${err.type}`;
+        networkStatusEl.style.color = '#ff6b6b';
+    });
+}
+
+// Update existing state-changing functions to sync
+function syncState() {
+    if(isHost && connections.length > 0 && !disableSyncOnRender) {
+        const message = {
+            type: 'sync',
+            state: state
+        };
+        connections.forEach(conn => {
+            if(conn.open) {
+                conn.send(message);
+            }
+        });
+    }
+}
+
+// Add sync calls to key state-changing functions
+const originalRender = render;
+render = function() {
+    originalRender();
+    if(!disableSyncOnRender) {
+        syncState();
+    }
+};
+
+hostGameBtn.onclick = initHost;
+joinGameBtn.onclick = joinGame;
+</script>
+</body>
+</html>
