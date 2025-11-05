@@ -1,25 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Poker Chips</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8" />
+    <title>Live Poker Tracker (Single Device)</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>Welcome to Live Poker Chips</h1>
-  </header>
+    <header><h1>Live Poker Tracker</h1></header>
 
-  <main>
-    <p>Your source for high-quality poker chips and accessories.</p>
-    <a href="shop.html">Shop Now</a>
-  </main>
+    <section id="controls">
+        <input id="playerName" placeholder="Player name" />
+        <input id="playerStack" placeholder="Stack (chips)" type="number" value="1000" />
+        <button id="addPlayer">Add player</button>
+        <button id="startRound">Start Round</button>
+        <button id="reset">Reset Table</button>
+    </section>
 
-  <footer>
-    <p>&copy; 2025 Live Poker Chips. All rights reserved.</p>
-  </footer>
+    <section id="table">
+        <div id="info">
+            <div>Pot: <span id="pot">0</span></div>
+            <div>Current bet: <span id="currentBet">0</span></div>
+            <div>To act: <span id="currentPlayerName">—</span></div>
+        </div>
+
+        <div id="players"></div>
+
+        <div id="actions">
+            <input id="amount" type="number" min="0" value="10" />
+            <button id="betBtn">Bet</button>
+            <button id="raiseBtn">Raise</button>
+            <button id="callBtn">Call</button>
+            <button id="checkBtn">Check</button>
+            <button id="foldBtn">Fold</button>
+            <button id="nextBtn">Next</button>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
 </body>
 </html>
-
 
