@@ -1,0 +1,499 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Live Poker Tracker (Single Device)</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial;
+        }
+        body {
+            margin: 0;
+            padding: 16px;
+            background: #0f1724;
+            color: #e6eef8;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+        button, input, select {
+            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #263142;
+            background: #15232f;
+            color: #e6eef8;
+            margin: 4px;
+        }
+        button:hover {
+            background: #1a2a38;
+            cursor: pointer;
+        }
+        #networkControls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #14202a;
+            border-radius: 8px;
+        }
+        #networkStatus {
+            font-size: 13px;
+            color: #9fb0c5;
+            padding: 8px;
+            background: #0c1b24;
+            border-radius: 6px;
+        }
+        #controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #14202a;
+            border-radius: 8px;
+        }
+        #table {
+            background: #14202a;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+        #info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        #players {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .player {
+            background: #0c1b24;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+        }
+        .player.active {
+            border-color: #ffd166;
+            box-shadow: 0 0 10px rgba(255, 209, 102, 0.3);
+        }
+        .player.folded {
+            opacity: 0.5;
+        }
+        .player-name {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+        .player-info {
+            font-size: 13px;
+            color: #9fb0c5;
+        }
+        #actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Live Poker Tracker</h1>
+    </header>
+
+    <div id="networkControls">
+        <button id="hostGame">Host Game</button>
+        <input id="joinCode" placeholder="Room Code" style="width:120px" />
+        <button id="joinGame">Join Room</button>
+        <div id="networkStatus">Not connected</div>
+    </div>
+
+    <section id="controls">
+        <input id="playerName" placeholder="Player name" />
+        <input id="playerStack" placeholder="Stack (chips)" type="number" value="1000" />
+        <button id="addPlayer">Add player</button>
+        <button id="startRound">Start Round</button>
+        <button id="reset">Reset Table</button>
+    </section>
+
+    <section id="table">
+        <div id="info">
+            <div>Pot: <span id="pot">0</span></div>
+            <div>Current bet: <span id="currentBet">0</span></div>
+            <div>To act: <span id="currentPlayerName">—</span></div>
+        </div>
+
+        <div id="players"></div>
+
+        <div id="actions">
+            <input id="amount" type="number" min="0" value="10" />
+            <button id="betBtn">Bet</button>
+            <button id="raiseBtn">Raise</button>
+            <button id="callBtn">Call</button>
+            <button id="checkBtn">Check</button>
+            <button id="foldBtn">Fold</button>
+            <button id="nextBtn">Next Player</button>
+        </div>
+    </section>
+
+    <script>
+        // State management
+        let state = {
+            players: [],
+            pot: 0,
+            currentBet: 0,
+            currentPlayerIndex: 0,
+            roundActive: false
+        };
+
+        // Network variables
+        let ws = null;
+        let isHost = false;
+        let roomCode = null;
+        let myNickname = null;
+        let mySeatNumber = null;
+        let hasJoined = false; // Track if this session has already joined
+
+        // DOM elements
+        const playerNameInput = document.getElementById('playerName');
+        const playerStackInput = document.getElementById('playerStack');
+        const addPlayerBtn = document.getElementById('addPlayer');
+        const startRoundBtn = document.getElementById('startRound');
+        const resetBtn = document.getElementById('reset');
+        const potEl = document.getElementById('pot');
+        const currentBetEl = document.getElementById('currentBet');
+        const currentPlayerNameEl = document.getElementById('currentPlayerName');
+        const playersEl = document.getElementById('players');
+        const amountInput = document.getElementById('amount');
+        const betBtn = document.getElementById('betBtn');
+        const raiseBtn = document.getElementById('raiseBtn');
+        const callBtn = document.getElementById('callBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        const foldBtn = document.getElementById('foldBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const hostGameBtn = document.getElementById('hostGame');
+        const joinGameBtn = document.getElementById('joinGame');
+        const joinCodeInput = document.getElementById('joinCode');
+        const networkStatusEl = document.getElementById('networkStatus');
+
+        // Add player
+        function addPlayer() {
+            const name = playerNameInput.value.trim();
+            const stack = parseInt(playerStackInput.value) || 1000;
+
+            if (!name) {
+                alert('Please enter a player name');
+                return;
+            }
+
+            state.players.push({
+                name: name,
+                stack: stack,
+                bet: 0,
+                folded: false
+            });
+
+            playerNameInput.value = '';
+            render();
+            syncState();
+        }
+
+        // Start round
+        function startRound() {
+            if (state.players.length < 2) {
+                alert('Need at least 2 players');
+                return;
+            }
+            state.roundActive = true;
+            state.currentPlayerIndex = 0;
+            state.players.forEach(p => {
+                p.bet = 0;
+                p.folded = false;
+            });
+            render();
+            syncState();
+        }
+
+        // Player actions
+        function bet() {
+            if (!state.roundActive) return;
+            const amount = parseInt(amountInput.value);
+            const player = state.players[state.currentPlayerIndex];
+
+            if (amount > player.stack) {
+                alert('Not enough chips');
+                return;
+            }
+
+            player.stack -= amount;
+            player.bet += amount;
+            state.pot += amount;
+            state.currentBet = Math.max(state.currentBet, player.bet);
+            nextPlayer();
+            syncState();
+        }
+
+        function raise() {
+            if (!state.roundActive) return;
+            const amount = parseInt(amountInput.value);
+            const player = state.players[state.currentPlayerIndex];
+            const toCall = state.currentBet - player.bet;
+            const totalNeeded = toCall + amount;
+
+            if (totalNeeded > player.stack) {
+                alert('Not enough chips');
+                return;
+            }
+
+            player.stack -= totalNeeded;
+            player.bet += totalNeeded;
+            state.pot += totalNeeded;
+            state.currentBet = player.bet;
+            nextPlayer();
+            syncState();
+        }
+
+        function call() {
+            if (!state.roundActive) return;
+            const player = state.players[state.currentPlayerIndex];
+            const toCall = Math.min(state.currentBet - player.bet, player.stack);
+
+            player.stack -= toCall;
+            player.bet += toCall;
+            state.pot += toCall;
+            nextPlayer();
+            syncState();
+        }
+
+        function check() {
+            if (!state.roundActive) return;
+            const player = state.players[state.currentPlayerIndex];
+            if (player.bet < state.currentBet) {
+                alert('Cannot check, must call or fold');
+                return;
+            }
+            nextPlayer();
+            syncState();
+        }
+
+        function fold() {
+            if (!state.roundActive) return;
+            state.players[state.currentPlayerIndex].folded = true;
+            nextPlayer();
+            syncState();
+        }
+
+        function nextPlayer() {
+            let attempts = 0;
+            do {
+                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+                attempts++;
+            } while (state.players[state.currentPlayerIndex].folded && attempts < state.players.length);
+            render();
+        }
+
+        function resetTable() {
+            if (!confirm('Reset the entire table?')) return;
+            state = {
+                players: [],
+                pot: 0,
+                currentBet: 0,
+                currentPlayerIndex: 0,
+                roundActive: false
+            };
+            render();
+            syncState();
+        }
+
+        // Render
+        function render() {
+            potEl.textContent = state.pot;
+            currentBetEl.textContent = state.currentBet;
+
+            if (state.roundActive && state.players.length > 0) {
+                currentPlayerNameEl.textContent = state.players[state.currentPlayerIndex].name;
+            } else {
+                currentPlayerNameEl.textContent = '—';
+            }
+
+            playersEl.innerHTML = '';
+            state.players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'player';
+                if (index === state.currentPlayerIndex && state.roundActive) {
+                    playerDiv.classList.add('active');
+                }
+                if (player.folded) {
+                    playerDiv.classList.add('folded');
+                }
+
+                playerDiv.innerHTML = `
+                    <div class="player-name">Seat ${index + 1}: ${player.name}</div>
+                    <div class="player-info">Stack: ${player.stack}</div>
+                    <div class="player-info">Bet: ${player.bet}</div>
+                    ${player.folded ? '<div class="player-info">FOLDED</div>' : ''}
+                `;
+
+                playersEl.appendChild(playerDiv);
+            });
+        }
+
+        // Network functions
+        function initHost() {
+            // Check if already joined
+            if (hasJoined) {
+                alert('You have already joined a room in this session!');
+                return;
+            }
+
+            // Prompt for player name
+            const playerName = prompt('Enter your player name:');
+            if (!playerName || playerName.trim() === '') {
+                alert('Player name is required to host!');
+                return;
+            }
+
+            isHost = true;
+            hasJoined = true;
+            myNickname = playerName.trim();
+            roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            // Auto-assign host to seat 1
+            state.players = [];
+            state.players.push({
+                name: myNickname,
+                stack: 1000,
+                bet: 0,
+                folded: false
+            });
+
+            mySeatNumber = 0; // Host is seat 1 (index 0)
+            state.currentPlayerIndex = 0;
+
+            networkStatusEl.textContent = `Hosting - Room Code: ${roomCode} | ${myNickname} | Seat 1`;
+
+            // Store room code and state in localStorage for simple demo
+            // In production, use a real WebSocket server
+            localStorage.setItem('poker_room_' + roomCode, JSON.stringify(state));
+
+            // Poll for changes
+            setInterval(() => {
+                if (isHost && roomCode) {
+                    localStorage.setItem('poker_room_' + roomCode, JSON.stringify(state));
+                }
+            }, 500);
+
+            render();
+        }
+
+        function joinGame() {
+            // Check if already joined
+            if (hasJoined) {
+                alert('You have already joined a room in this session!');
+                return;
+            }
+
+            const code = joinCodeInput.value.trim().toUpperCase();
+            if (!code) {
+                alert('Please enter a room code');
+                return;
+            }
+
+            // Prompt for player name
+            const playerName = prompt('Enter your player name:');
+            if (!playerName || playerName.trim() === '') {
+                alert('Player name is required to join!');
+                return;
+            }
+
+            hasJoined = true;
+            myNickname = playerName.trim();
+            roomCode = code;
+
+            // Try to load room state
+            const roomData = localStorage.getItem('poker_room_' + roomCode);
+            if (!roomData) {
+                alert('Room not found! Make sure the host has created the room.');
+                return;
+            }
+
+            state = JSON.parse(roomData);
+
+            // Clear all seats and set this player as seat 1
+            state.players = [];
+            state.players.push({
+                name: myNickname,
+                stack: 1000,
+                bet: 0,
+                folded: false
+            });
+
+            mySeatNumber = 0; // This player is now seat 1 (index 0)
+            state.currentPlayerIndex = 0;
+
+            networkStatusEl.textContent = `Room: ${roomCode} | ${myNickname} | Seat 1`;
+
+            // Update room state
+            localStorage.setItem('poker_room_' + roomCode, JSON.stringify(state));
+
+            // Poll for updates
+            setInterval(() => {
+                if (!isHost && roomCode) {
+                    const updatedData = localStorage.getItem('poker_room_' + roomCode);
+                    if (updatedData) {
+                        state = JSON.parse(updatedData);
+                        render();
+                    }
+                }
+            }, 500);
+
+            render();
+        }
+
+        function syncState() {
+            if (roomCode) {
+                localStorage.setItem('poker_room_' + roomCode, JSON.stringify(state));
+            }
+        }
+
+        // Event listeners
+        addPlayerBtn.onclick = addPlayer;
+        startRoundBtn.onclick = startRound;
+        resetBtn.onclick = resetTable;
+        betBtn.onclick = bet;
+        raiseBtn.onclick = raise;
+        callBtn.onclick = call;
+        checkBtn.onclick = check;
+        foldBtn.onclick = fold;
+        nextBtn.onclick = nextPlayer;
+        hostGameBtn.onclick = initHost;
+        joinGameBtn.onclick = joinGame;
+
+        // Enter key for player name
+        playerNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addPlayer();
+            }
+        });
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
