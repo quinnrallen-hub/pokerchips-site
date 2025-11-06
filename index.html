@@ -82,7 +82,10 @@
         <input id="playerName" placeholder="Player name">
         <input id="playerStack" placeholder="Stack (chips)" type="number" value="1000">
         <button id="addPlayer">Add player</button>
+        <input id="smallBlind" placeholder="Small blind" type="number" value="5" style="width:110px">
+        <input id="bigBlind" placeholder="Big blind" type="number" value="10" style="width:110px">
         <button id="startRound">Start Round</button>
+        <button id="moveButton">Move Button</button>
         <button id="reset">Reset Table</button>
     </section>
 
@@ -138,7 +141,7 @@
         const createDeck=()=>suits.flatMap(s=>ranks.map(r=>({rank:r,suit:s})));
         const shuffleDeck=d=>{const a=[...d];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
-        let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0};
+        let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
         let syncTimeout=null,showDigitalCards=false;
 
@@ -148,7 +151,8 @@
             currentPlayerName:$('currentPlayerName'),streetName:$('streetName'),players:$('players'),
             communityCardsDisplay:$('communityCardsDisplay'),amount:$('amount'),joinCode:$('joinCode'),
             networkStatus:$('networkStatus'),networkControls:$('networkControls'),
-            emptyPotModal:$('emptyPotModal'),winnerSelect:$('winnerSelect'),modalPotAmount:$('modalPotAmount')
+            emptyPotModal:$('emptyPotModal'),winnerSelect:$('winnerSelect'),modalPotAmount:$('modalPotAmount'),
+            smallBlind:$('smallBlind'),bigBlind:$('bigBlind')
         };
 
         const render=()=>{
@@ -167,14 +171,21 @@
             }else{
                 communityCards.style.display='none';
             }
-            els.players.innerHTML=state.players.map((p,i)=>`
-                <div class="player${i===state.currentPlayerIndex&&state.roundActive?' active':''}${p.folded?' folded':''}">
-                    <div class="player-name">Seat ${i+1}: ${p.name}</div>
+            els.players.innerHTML=state.players.map((p,i)=>{
+                const isButton=i===state.buttonPosition;
+                const isSB=i===(state.buttonPosition+1)%state.players.length;
+                const isBB=i===(state.buttonPosition+2)%state.players.length;
+                let position='';
+                if(isButton)position=' (BTN)';
+                else if(isSB)position=' (SB)';
+                else if(isBB)position=' (BB)';
+                return`<div class="player${i===state.currentPlayerIndex&&state.roundActive?' active':''}${p.folded?' folded':''}">
+                    <div class="player-name">Seat ${i+1}: ${p.name}${position}</div>
                     <div class="player-info">Stack: ${p.stack}</div>
                     <div class="player-info">Bet: ${p.bet}</div>
                     ${p.folded?'<div class="player-info">FOLDED</div>':''}
-                </div>
-            `).join('');
+                </div>`
+            }).join('');
         };
 
         const createCardElement=c=>{
@@ -218,13 +229,36 @@
 
         const startRound=()=>{
             if(state.players.length<2)return alert('Need at least 2 players');
+            const sb=parseInt(els.smallBlind.value)||5;
+            const bb=parseInt(els.bigBlind.value)||10;
             state.roundActive=true;
-            state.currentPlayerIndex=0;
             state.street='preflop';
             state.roundCount=0;
             state.deck=shuffleDeck(createDeck());
             state.communityCards=[];
             state.players.forEach(p=>{p.bet=0;p.folded=false;p.cards=p.cards||[]});
+
+            // Post blinds
+            const sbPos=(state.buttonPosition+1)%state.players.length;
+            const bbPos=(state.buttonPosition+2)%state.players.length;
+            const sbPlayer=state.players[sbPos];
+            const bbPlayer=state.players[bbPos];
+
+            // Small blind
+            const sbAmount=Math.min(sb,sbPlayer.stack);
+            sbPlayer.stack-=sbAmount;
+            sbPlayer.bet=sbAmount;
+            state.pot+=sbAmount;
+
+            // Big blind
+            const bbAmount=Math.min(bb,bbPlayer.stack);
+            bbPlayer.stack-=bbAmount;
+            bbPlayer.bet=bbAmount;
+            state.pot+=bbAmount;
+
+            state.currentBet=bb;
+            state.currentPlayerIndex=(state.buttonPosition+3)%state.players.length;
+
             render();
             syncState();
         };
@@ -291,9 +325,16 @@
             render();
         };
 
+        const moveButton=()=>{
+            if(state.players.length<2)return;
+            state.buttonPosition=(state.buttonPosition+1)%state.players.length;
+            render();
+            syncState();
+        };
+
         const resetTable=()=>{
             if(!confirm('Reset the entire table?'))return;
-            state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0};
+            state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
             render();
             syncState();
         };
@@ -418,6 +459,7 @@
 
         $('addPlayer').onclick=addPlayer;
         $('startRound').onclick=startRound;
+        $('moveButton').onclick=moveButton;
         $('reset').onclick=resetTable;
         $('betBtn').onclick=bet;
         $('raiseBtn').onclick=raise;
