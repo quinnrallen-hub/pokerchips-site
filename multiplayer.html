@@ -56,17 +56,15 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>Live Poker Tracker - Multiplayer</h1>
-        <a href="index.html" style="color:var(--primary);text-decoration:none;font-size:14px">← Single Device</a>
-    </header>
-
-    <div id="networkControls" class="section" style="text-align:center">
-        <h2 style="width:100%;color:var(--text);font-size:18px;margin:0 0 16px 0">Connect to Multiplayer</h2>
-        <button id="hostGame">Host Game</button>
-        <input id="joinCode" placeholder="Enter Room Code" style="width:140px">
-        <button id="joinGame">Join Room</button>
-        <div id="networkStatus" style="width:100%;margin-top:12px">Not connected</div>
+    <div id="networkControls" class="section" style="text-align:center;max-width:500px;margin:100px auto">
+        <h1 style="width:100%;color:var(--primary);font-size:28px;margin:0 0 24px 0">Live Poker - Multiplayer</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px">Connect to start playing with others</p>
+        <button id="hostGame" style="font-size:16px;padding:12px 24px">Host Game</button>
+        <div style="margin:20px 0;color:var(--text-muted)">or</div>
+        <input id="joinCode" placeholder="Enter Room Code" style="width:200px;font-size:16px;padding:12px">
+        <button id="joinGame" style="font-size:16px;padding:12px 24px">Join Room</button>
+        <div id="networkStatus" style="width:100%;margin-top:20px;font-size:14px">Not connected</div>
+        <div style="margin-top:24px"><a href="index.html" style="color:var(--primary);text-decoration:none;font-size:14px">← Back to Single Device</a></div>
     </div>
 
     <div id="gameArea" class="hidden">
