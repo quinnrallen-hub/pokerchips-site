@@ -60,10 +60,14 @@
         <h1>Live Poker Tracker</h1>
     </header>
 
-    <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8)">
+    <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" id="showNetworkToggle">
             <span>Show Network/Multiplayer Options</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="showDigitalCards" checked>
+            <span>Digital Cards</span>
         </label>
     </div>
 
@@ -136,7 +140,7 @@
 
         let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0};
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
-        let syncTimeout=null;
+        let syncTimeout=null,showDigitalCards=true;
 
         const $=(id)=>document.getElementById(id);
         const els={
@@ -152,7 +156,11 @@
             els.currentBet.textContent=state.currentBet;
             els.streetName.textContent=state.street?state.street.toUpperCase():'—';
             els.currentPlayerName.textContent=state.roundActive&&state.players.length>0?state.players[state.currentPlayerIndex].name:'—';
-            els.communityCardsDisplay.innerHTML=state.communityCards?.length>0?state.communityCards.map(createCardElement).join(''):'—';
+            if(state.communityCards?.length>0){
+                els.communityCardsDisplay.innerHTML=showDigitalCards?state.communityCards.map(createCardElement).join(''):state.communityCards.map(c=>`${c.rank}${c.suit}`).join(' ');
+            }else{
+                els.communityCardsDisplay.textContent='—';
+            }
             els.players.innerHTML=state.players.map((p,i)=>`
                 <div class="player${i===state.currentPlayerIndex&&state.roundActive?' active':''}${p.folded?' folded':''}">
                     <div class="player-name">Seat ${i+1}: ${p.name}</div>
@@ -420,6 +428,7 @@
         els.emptyPotModal.onclick=e=>{if(e.target===els.emptyPotModal)closeEmptyPotModal()};
         els.playerName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addPlayer()}});
         $('showNetworkToggle').addEventListener('change',e=>els.networkControls.classList.toggle('hidden',!e.target.checked));
+        $('showDigitalCards').addEventListener('change',e=>{showDigitalCards=e.target.checked;render()});
 
         render();
     </script>
