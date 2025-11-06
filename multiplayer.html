@@ -406,11 +406,8 @@
             peer.on('connection',conn=>{
                 console.log('New peer connected:',conn.peer);
                 connections.push(conn);
-                conn.on('open',()=>{
-                    console.log('Connection opened, sending state');
-                    conn.send({type:'state',state});
-                });
                 conn.on('data',data=>{
+                    console.log('Host received:',data.type);
                     if(data.type==='state'){
                         state=data.state;
                         render();
@@ -419,10 +416,17 @@
                         console.log('Player joined:',data.playerName);
                         state.players.push({name:data.playerName,stack:1000,bet:0,folded:false,cards:[]});
                         render();
+                        console.log('Sending updated state to all clients');
                         broadcastState();
                     }
                 });
-                conn.on('close',()=>connections=connections.filter(c=>c!==conn));
+                conn.on('open',()=>{
+                    console.log('Connection opened with peer');
+                });
+                conn.on('close',()=>{
+                    console.log('Peer disconnected');
+                    connections=connections.filter(c=>c!==conn);
+                });
             });
             peer.on('error',err=>{
                 console.error('Host peer error:',err);
@@ -457,6 +461,14 @@
                         }
                     },15000);
 
+                    conn.on('data',data=>{
+                        console.log('Received data:',data.type);
+                        if(data.type==='state'){
+                            console.log('Updating state from host');
+                            state=data.state;
+                            render();
+                        }
+                    });
                     conn.on('open',()=>{
                         connected=true;
                         clearTimeout(timeout);
@@ -465,7 +477,6 @@
                         document.getElementById('connectionStatus').style.color='#34d399';
                         conn.send({type:'join',playerName:myNickname});
                     });
-                    conn.on('data',data=>{if(data.type==='state'){state=data.state;render()}});
                     conn.on('close',()=>{
                         console.log('Disconnected from room');
                         document.getElementById('connectionStatus').textContent='Disconnected';
