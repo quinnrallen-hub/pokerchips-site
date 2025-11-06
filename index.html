@@ -82,14 +82,17 @@
         <div id="networkStatus">Not connected</div>
     </div>
 
+    <div id="blindsControls" class="section">
+        <input id="smallBlind" placeholder="Small blind" type="number" value="5" style="width:110px">
+        <input id="bigBlind" placeholder="Big blind" type="number" value="10" style="width:110px">
+        <button id="moveButton">Move Button</button>
+    </div>
+
     <section id="controls" class="section">
         <input id="playerName" placeholder="Player name">
         <input id="playerStack" placeholder="Stack (chips)" type="number" value="1000">
         <button id="addPlayer">Add player</button>
-        <input id="smallBlind" placeholder="Small blind" type="number" value="5" style="width:110px">
-        <input id="bigBlind" placeholder="Big blind" type="number" value="10" style="width:110px">
         <button id="startRound">Start Round</button>
-        <button id="moveButton">Move Button</button>
         <button id="reset">Reset Table</button>
     </section>
 
@@ -156,7 +159,7 @@
             communityCardsDisplay:$('communityCardsDisplay'),amount:$('amount'),joinCode:$('joinCode'),
             networkStatus:$('networkStatus'),networkControls:$('networkControls'),
             emptyPotModal:$('emptyPotModal'),winnerSelect:$('winnerSelect'),modalPotAmount:$('modalPotAmount'),
-            smallBlind:$('smallBlind'),bigBlind:$('bigBlind')
+            smallBlind:$('smallBlind'),bigBlind:$('bigBlind'),blindsControls:$('blindsControls')
         };
 
         const render=()=>{
@@ -487,6 +490,7 @@
         els.playerName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addPlayer()}});
         $('showNetworkToggle').addEventListener('change',e=>els.networkControls.classList.toggle('hidden',!e.target.checked));
         $('showDigitalCards').addEventListener('change',e=>{showDigitalCards=e.target.checked;render()});
+        $('enableBlinds').addEventListener('change',e=>els.blindsControls.classList.toggle('hidden',!e.target.checked));
 
         render();
     </script>
