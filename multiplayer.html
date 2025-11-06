@@ -431,22 +431,29 @@
             peer=new Peer();
             peer.on('open',id=>{
                 console.log('Client ready:',id);
-                const conn=peer.connect('poker-'+roomCode);
-                connections.push(conn);
-                conn.on('open',()=>{
-                    console.log('Connected to room');
-                    conn.send({type:'join',playerName:myNickname});
-                });
-                conn.on('data',data=>{if(data.type==='state'){state=data.state;render()}});
-                conn.on('close',()=>console.log('Disconnected'));
-                conn.on('error',err=>{
-                    console.error('Connection error:',err);
-                    alert('Failed to connect to room.');
-                });
+                setTimeout(()=>{
+                    const conn=peer.connect('poker-'+roomCode,{reliable:true});
+                    connections.push(conn);
+                    conn.on('open',()=>{
+                        console.log('Connected to room');
+                        conn.send({type:'join',playerName:myNickname});
+                    });
+                    conn.on('data',data=>{if(data.type==='state'){state=data.state;render()}});
+                    conn.on('close',()=>{
+                        console.log('Disconnected');
+                        alert('Disconnected from room');
+                    });
+                    conn.on('error',err=>{
+                        console.error('Connection error:',err);
+                        alert('Failed to connect to room.');
+                    });
+                },500);
             });
             peer.on('error',err=>{
                 console.error('Peer error:',err);
-                if(err.type==='peer-unavailable')alert('Room not found!');
+                if(err.type==='peer-unavailable'){
+                    alert('Room not found! Host may have left.');
+                }
             });
         };
 
