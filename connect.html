@@ -45,35 +45,17 @@
 
     <script>
         'use strict';
-        let peer=null,roomCode=null,playerName=null;
         const statusEl=document.getElementById('status');
 
         document.getElementById('hostGame').onclick=()=>{
             const name=prompt('Enter your player name:');
             if(!name?.trim())return alert('Player name is required!');
-            playerName=name.trim();
-            roomCode=Math.random().toString(36).substring(2,8).toUpperCase();
-            statusEl.textContent='Creating room...';
+            const roomCode=Math.random().toString(36).substring(2,8).toUpperCase();
 
-            peer=new Peer('poker-'+roomCode);
-            peer.on('open',id=>{
-                console.log('Room created:',roomCode,'Peer ID:',id);
-                statusEl.textContent='Room created! Redirecting...';
-                setTimeout(()=>{
-                    sessionStorage.setItem('pokerRole','host');
-                    sessionStorage.setItem('pokerRoomCode',roomCode);
-                    sessionStorage.setItem('pokerPlayerName',playerName);
-                    window.location.href='multiplayer.html';
-                },1000);
-            });
-            peer.on('error',err=>{
-                console.error('Host error:',err);
-                statusEl.textContent='Error: '+err.type;
-                if(err.type==='unavailable-id'){
-                    statusEl.textContent='Room code taken, retrying...';
-                    setTimeout(()=>document.getElementById('hostGame').click(),1000);
-                }
-            });
+            sessionStorage.setItem('pokerRole','host');
+            sessionStorage.setItem('pokerRoomCode',roomCode);
+            sessionStorage.setItem('pokerPlayerName',name.trim());
+            window.location.href='multiplayer.html';
         };
 
         document.getElementById('joinGame').onclick=()=>{
@@ -81,47 +63,11 @@
             if(!code)return alert('Please enter a room code');
             const name=prompt('Enter your player name:');
             if(!name?.trim())return alert('Player name is required!');
-            playerName=name.trim();
-            roomCode=code;
-            statusEl.textContent='Connecting to room...';
 
-            peer=new Peer();
-            peer.on('open',()=>{
-                statusEl.textContent='Finding room...';
-                setTimeout(()=>{
-                    const conn=peer.connect('poker-'+roomCode,{reliable:true});
-                    let connected=false;
-
-                    const timeout=setTimeout(()=>{
-                        if(!connected){
-                            conn.close();
-                            statusEl.textContent='Connection timeout. Room not found.';
-                            alert('Could not find room. Make sure the host created the room first.');
-                        }
-                    },10000);
-
-                    conn.on('open',()=>{
-                        connected=true;
-                        clearTimeout(timeout);
-                        sessionStorage.setItem('pokerRole','client');
-                        sessionStorage.setItem('pokerRoomCode',roomCode);
-                        sessionStorage.setItem('pokerPlayerName',playerName);
-                        window.location.href='multiplayer.html';
-                    });
-                    conn.on('error',err=>{
-                        clearTimeout(timeout);
-                        console.error('Connection error:',err);
-                        statusEl.textContent='Failed to connect. Check room code.';
-                    });
-                },500);
-            });
-            peer.on('error',err=>{
-                console.error('Peer error:',err);
-                statusEl.textContent='Error: '+err.type;
-                if(err.type==='peer-unavailable'){
-                    alert('Room not found! Make sure the host created the room.');
-                }
-            });
+            sessionStorage.setItem('pokerRole','client');
+            sessionStorage.setItem('pokerRoomCode',code);
+            sessionStorage.setItem('pokerPlayerName',name.trim());
+            window.location.href='multiplayer.html';
         };
 
         document.getElementById('joinCode').addEventListener('keydown',e=>{
