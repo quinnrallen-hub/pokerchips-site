@@ -66,7 +66,7 @@
             <span>Show Network/Multiplayer Options</span>
         </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="showDigitalCards" checked>
+            <input type="checkbox" id="showDigitalCards">
             <span>Digital Cards</span>
         </label>
     </div>
@@ -140,7 +140,7 @@
 
         let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0};
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
-        let syncTimeout=null,showDigitalCards=true;
+        let syncTimeout=null,showDigitalCards=false;
 
         const $=(id)=>document.getElementById(id);
         const els={
