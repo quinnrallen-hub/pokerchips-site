@@ -56,18 +56,16 @@
     </style>
 </head>
 <body>
-    <div id="networkControls" class="section" style="text-align:center;max-width:500px;margin:100px auto">
-        <h1 style="width:100%;color:var(--primary);font-size:28px;margin:0 0 24px 0">Live Poker - Multiplayer</h1>
-        <p style="color:var(--text-muted);margin-bottom:24px">Connect to start playing with others</p>
-        <button id="hostGame" style="font-size:16px;padding:12px 24px">Host Game</button>
-        <div style="margin:20px 0;color:var(--text-muted)">or</div>
-        <input id="joinCode" placeholder="Enter Room Code" style="width:200px;font-size:16px;padding:12px">
-        <button id="joinGame" style="font-size:16px;padding:12px 24px">Join Room</button>
-        <div id="networkStatus" style="width:100%;margin-top:20px;font-size:14px">Not connected</div>
-        <div style="margin-top:24px"><a href="index.html" style="color:var(--primary);text-decoration:none;font-size:14px">← Back to Single Device</a></div>
-    </div>
+    <header>
+        <h1>Live Poker Tracker - Multiplayer</h1>
+        <div>
+            <span id="roomInfo" style="color:var(--text-muted);font-size:14px;margin-right:16px"></span>
+            <a href="connect.html" style="color:var(--primary);text-decoration:none;font-size:14px">Change Room</a> |
+            <a href="index.html" style="color:var(--primary);text-decoration:none;font-size:14px;margin-left:8px">Single Device</a>
+        </div>
+    </header>
 
-    <div id="gameArea" class="hidden">
+    <div id="gameArea">
         <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                 <input type="checkbox" id="showDigitalCards">
@@ -150,15 +148,25 @@
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
         let syncTimeout=null,showDigitalCards=false;
 
+        // Check if coming from connect page
+        const storedRole=sessionStorage.getItem('pokerRole');
+        const storedRoom=sessionStorage.getItem('pokerRoomCode');
+        const storedName=sessionStorage.getItem('pokerPlayerName');
+
+        if(!storedRole||!storedRoom||!storedName){
+            window.location.href='connect.html';
+        }
+
         const $=(id)=>document.getElementById(id);
         const els={
             playerName:$('playerName'),playerStack:$('playerStack'),pot:$('pot'),currentBet:$('currentBet'),
             currentPlayerName:$('currentPlayerName'),streetName:$('streetName'),players:$('players'),
-            communityCardsDisplay:$('communityCardsDisplay'),amount:$('amount'),joinCode:$('joinCode'),
-            networkStatus:$('networkStatus'),networkControls:$('networkControls'),
+            communityCardsDisplay:$('communityCardsDisplay'),amount:$('amount'),
             emptyPotModal:$('emptyPotModal'),winnerSelect:$('winnerSelect'),modalPotAmount:$('modalPotAmount'),
             smallBlind:$('smallBlind'),bigBlind:$('bigBlind'),blindsControls:$('blindsControls')
         };
+
+        document.getElementById('roomInfo').textContent=`Room: ${storedRoom} | ${storedName}`;
 
         const render=()=>{
             els.pot.textContent=state.pot;
@@ -379,23 +387,17 @@
         };
 
         const initHost=()=>{
-            if(hasJoined)return alert('You have already joined a room in this session!');
-            const name=prompt('Enter your player name:');
-            if(!name?.trim())return alert('Player name is required to host!');
             isHost=true;
             hasJoined=true;
-            myNickname=name.trim();
-            roomCode=Math.random().toString(36).substring(2,8).toUpperCase();
+            myNickname=storedName;
+            roomCode=storedRoom;
             state.players=[{name:myNickname,stack:1000,bet:0,folded:false,cards:[]}];
             mySeatNumber=0;
             state.currentPlayerIndex=0;
-            els.networkStatus.textContent='Connecting...';
 
             peer=new Peer('poker-'+roomCode,{host:'0.peerjs.com',port:443,path:'/',secure:true,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
             peer.on('open',id=>{
-                els.networkStatus.textContent=`Hosting - Room: ${roomCode} | ${myNickname}`;
                 console.log('Host ready:',id);
-                document.getElementById('gameArea').classList.remove('hidden');
             });
             peer.on('connection',conn=>{
                 console.log('New peer:',conn.peer);
@@ -422,15 +424,9 @@
         };
 
         const joinGame=()=>{
-            if(hasJoined)return alert('You have already joined a room in this session!');
-            const code=els.joinCode.value.trim().toUpperCase();
-            if(!code)return alert('Please enter a room code');
-            const name=prompt('Enter your player name:');
-            if(!name?.trim())return alert('Player name is required to join!');
             hasJoined=true;
-            myNickname=name.trim();
-            roomCode=code;
-            els.networkStatus.textContent=`Connecting to ${roomCode}...`;
+            myNickname=storedName;
+            roomCode=storedRoom;
 
             peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
             peer.on('open',id=>{
@@ -438,22 +434,19 @@
                 const conn=peer.connect('poker-'+roomCode);
                 connections.push(conn);
                 conn.on('open',()=>{
-                    els.networkStatus.textContent=`Connected - Room: ${roomCode} | ${myNickname}`;
+                    console.log('Connected to room');
                     conn.send({type:'join',playerName:myNickname});
-                    document.getElementById('gameArea').classList.remove('hidden');
                 });
                 conn.on('data',data=>{if(data.type==='state'){state=data.state;render()}});
-                conn.on('close',()=>els.networkStatus.textContent='Disconnected');
+                conn.on('close',()=>console.log('Disconnected'));
                 conn.on('error',err=>{
                     console.error('Connection error:',err);
-                    els.networkStatus.textContent=`Connection error`;
-                    alert('Failed to connect. Check room code and host availability.');
+                    alert('Failed to connect to room.');
                 });
             });
             peer.on('error',err=>{
                 console.error('Peer error:',err);
-                els.networkStatus.textContent=`Error: ${err.type}`;
-                if(err.type==='peer-unavailable')alert('Room not found! Ensure host is online.');
+                if(err.type==='peer-unavailable')alert('Room not found!');
             });
         };
 
@@ -481,16 +474,20 @@
         $('foldBtn').onclick=fold;
         $('nextBtn').onclick=nextPlayer;
         $('advanceRoundBtn').onclick=advanceRound;
-        $('hostGame').onclick=initHost;
-        $('joinGame').onclick=joinGame;
         $('emptyPotBtn').onclick=openEmptyPotModal;
         $('confirmEmptyPot').onclick=awardPotToPlayer;
         $('cancelEmptyPot').onclick=closeEmptyPotModal;
         els.emptyPotModal.onclick=e=>{if(e.target===els.emptyPotModal)closeEmptyPotModal()};
         els.playerName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addPlayer()}});
-        $('showNetworkToggle').addEventListener('change',e=>els.networkControls.classList.toggle('hidden',!e.target.checked));
         $('showDigitalCards').addEventListener('change',e=>{showDigitalCards=e.target.checked;render()});
         $('enableBlinds').addEventListener('change',e=>els.blindsControls.classList.toggle('hidden',!e.target.checked));
+
+        // Auto-initialize based on role
+        if(storedRole==='host'){
+            initHost();
+        }else if(storedRole==='client'){
+            joinGame();
+        }
 
         render();
     </script>
