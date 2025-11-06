@@ -61,43 +61,40 @@
         <a href="index.html" style="color:var(--primary);text-decoration:none;font-size:14px">← Single Device</a>
     </header>
 
-    <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="showNetworkToggle">
-            <span>Show Network/Multiplayer Options</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="showDigitalCards">
-            <span>Digital Cards</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="enableBlinds" checked>
-            <span>Auto-Post Blinds</span>
-        </label>
-    </div>
-
-    <div id="networkControls" class="section hidden">
+    <div id="networkControls" class="section">
         <button id="hostGame">Host Game</button>
         <input id="joinCode" placeholder="Room Code" style="width:120px">
         <button id="joinGame">Join Room</button>
         <div id="networkStatus">Not connected</div>
     </div>
 
-    <div id="blindsControls" class="section">
-        <input id="smallBlind" placeholder="Small blind" type="number" value="5" style="width:110px">
-        <input id="bigBlind" placeholder="Big blind" type="number" value="10" style="width:110px">
-        <button id="moveButton">Move Button</button>
-    </div>
+    <div id="gameArea" class="hidden">
+        <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="showDigitalCards">
+                <span>Digital Cards</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="enableBlinds" checked>
+                <span>Auto-Post Blinds</span>
+            </label>
+        </div>
 
-    <section id="controls" class="section">
-        <input id="playerName" placeholder="Player name">
-        <input id="playerStack" placeholder="Stack (chips)" type="number" value="1000">
-        <button id="addPlayer">Add player</button>
-        <button id="startRound">Start Round</button>
-        <button id="reset">Reset Table</button>
-    </section>
+        <div id="blindsControls" class="section">
+            <input id="smallBlind" placeholder="Small blind" type="number" value="5" style="width:110px">
+            <input id="bigBlind" placeholder="Big blind" type="number" value="10" style="width:110px">
+            <button id="moveButton">Move Button</button>
+        </div>
 
-    <section id="table">
+        <section id="controls" class="section">
+            <input id="playerName" placeholder="Player name">
+            <input id="playerStack" placeholder="Stack (chips)" type="number" value="1000">
+            <button id="addPlayer">Add player</button>
+            <button id="startRound">Start Round</button>
+            <button id="reset">Reset Table</button>
+        </section>
+
+        <section id="table">
         <div id="info">
             <div>Pot: <span id="pot">0</span></div>
             <div>Current bet: <span id="currentBet">0</span></div>
@@ -124,6 +121,7 @@
             <button id="emptyPotBtn">Empty Pot</button>
         </div>
     </section>
+    </div>
 
     <div id="emptyPotModal" class="modal">
         <div class="modal-content">
@@ -398,6 +396,7 @@
             peer.on('open',id=>{
                 els.networkStatus.textContent=`Hosting - Room: ${roomCode} | ${myNickname}`;
                 console.log('Host ready:',id);
+                document.getElementById('gameArea').classList.remove('hidden');
             });
             peer.on('connection',conn=>{
                 console.log('New peer:',conn.peer);
@@ -442,6 +441,7 @@
                 conn.on('open',()=>{
                     els.networkStatus.textContent=`Connected - Room: ${roomCode} | ${myNickname}`;
                     conn.send({type:'join',playerName:myNickname});
+                    document.getElementById('gameArea').classList.remove('hidden');
                 });
                 conn.on('data',data=>{if(data.type==='state'){state=data.state;render()}});
                 conn.on('close',()=>els.networkStatus.textContent='Disconnected');
