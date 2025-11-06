@@ -219,6 +219,57 @@
             cursor: pointer;
         }
 
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: rgba(20, 32, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 32px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 209, 102, 0.3);
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+        }
+        .modal-content h2 {
+            margin: 0 0 20px 0;
+            color: #ffd166;
+            font-size: 24px;
+        }
+        .modal-content label {
+            display: block;
+            margin-bottom: 8px;
+            color: #9fb0c5;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .modal-content select {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .modal-buttons button {
+            margin: 0;
+        }
+
         /* Playing card styles */
         .card {
             display: inline-block;
@@ -332,8 +383,28 @@
             <button id="foldBtn">Fold</button>
             <button id="nextBtn">Next Player</button>
             <button id="advanceRoundBtn">Next Street</button>
+            <button id="emptyPotBtn">Empty Pot</button>
         </div>
     </section>
+
+    <!-- Empty Pot Modal -->
+    <div id="emptyPotModal" class="modal">
+        <div class="modal-content">
+            <h2>Award Pot to Player</h2>
+            <div style="margin-bottom: 20px; padding: 12px; background: rgba(255, 209, 102, 0.1); border-radius: 8px; border: 1px solid rgba(255, 209, 102, 0.3);">
+                <span style="color: #9fb0c5; font-size: 14px;">Pot Amount:</span>
+                <span style="color: #ffd166; font-size: 20px; font-weight: 700; margin-left: 8px;" id="modalPotAmount">0</span>
+            </div>
+            <label>Select Winner:</label>
+            <select id="winnerSelect">
+                <option value="">Choose a player...</option>
+            </select>
+            <div class="modal-buttons">
+                <button id="cancelEmptyPot">Cancel</button>
+                <button id="confirmEmptyPot" style="background: rgba(52, 211, 153, 0.2); border-color: rgba(52, 211, 153, 0.5);">Award Chips</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // State management
@@ -404,6 +475,12 @@
         const networkStatusEl = document.getElementById('networkStatus');
         const showNetworkToggle = document.getElementById('showNetworkToggle');
         const networkControlsEl = document.getElementById('networkControls');
+        const emptyPotBtn = document.getElementById('emptyPotBtn');
+        const emptyPotModal = document.getElementById('emptyPotModal');
+        const winnerSelect = document.getElementById('winnerSelect');
+        const modalPotAmount = document.getElementById('modalPotAmount');
+        const confirmEmptyPot = document.getElementById('confirmEmptyPot');
+        const cancelEmptyPot = document.getElementById('cancelEmptyPot');
 
         // Add player
         function addPlayer() {
@@ -830,6 +907,66 @@
             }
         }
 
+        // Empty Pot functions
+        function openEmptyPotModal() {
+            if (state.pot === 0) {
+                alert('The pot is already empty!');
+                return;
+            }
+
+            if (state.players.length === 0) {
+                alert('No players at the table!');
+                return;
+            }
+
+            // Update modal with current pot amount
+            modalPotAmount.textContent = state.pot;
+
+            // Populate player select
+            winnerSelect.innerHTML = '<option value="">Choose a player...</option>';
+            state.players.forEach((player, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${player.name} (Stack: ${player.stack})`;
+                winnerSelect.appendChild(option);
+            });
+
+            // Show modal
+            emptyPotModal.classList.add('active');
+        }
+
+        function closeEmptyPotModal() {
+            emptyPotModal.classList.remove('active');
+            winnerSelect.value = '';
+        }
+
+        function awardPotToPlayer() {
+            const winnerIndex = winnerSelect.value;
+
+            if (winnerIndex === '') {
+                alert('Please select a player!');
+                return;
+            }
+
+            const winner = state.players[parseInt(winnerIndex)];
+            const potAmount = state.pot;
+
+            // Award pot to winner
+            winner.stack += potAmount;
+            state.pot = 0;
+
+            // Reset bets
+            state.players.forEach(p => p.bet = 0);
+            state.currentBet = 0;
+
+            closeEmptyPotModal();
+            render();
+            syncState();
+
+            // Show confirmation
+            alert(`${winner.name} wins ${potAmount} chips!`);
+        }
+
         // Event listeners
         addPlayerBtn.onclick = addPlayer;
         startRoundBtn.onclick = startRound;
@@ -843,6 +980,16 @@
         advanceRoundBtn.onclick = advanceRound;
         hostGameBtn.onclick = initHost;
         joinGameBtn.onclick = joinGame;
+        emptyPotBtn.onclick = openEmptyPotModal;
+        confirmEmptyPot.onclick = awardPotToPlayer;
+        cancelEmptyPot.onclick = closeEmptyPotModal;
+
+        // Close modal on background click
+        emptyPotModal.onclick = (e) => {
+            if (e.target === emptyPotModal) {
+                closeEmptyPotModal();
+            }
+        };
 
         // Enter key for player name
         playerNameInput.addEventListener('keydown', (e) => {
