@@ -2,8 +2,9 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Live Poker Tracker (Single Device)</title>
+    <title>Live Poker Tracker</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
             font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
@@ -444,7 +445,8 @@
         }
 
         // Network variables
-        let ws = null;
+        let peer = null;
+        let connections = [];
         let isHost = false;
         let roomCode = null;
         let myNickname = null;
@@ -820,18 +822,65 @@
             mySeatNumber = 0; // Host is seat 1 (index 0)
             state.currentPlayerIndex = 0;
 
-            networkStatusEl.textContent = `Hosting - Room Code: ${roomCode} | ${myNickname} | Seat 1`;
+            networkStatusEl.textContent = `Connecting...`;
 
-            // Store room code and state in localStorage for simple demo
-            // In production, use a real WebSocket server
-            localStorage.setItem('poker_room_' + roomCode, JSON.stringify(state));
-
-            // Poll for changes
-            setInterval(() => {
-                if (isHost && roomCode) {
-                    localStorage.setItem('poker_room_' + roomCode, JSON.stringify(state));
+            // Initialize PeerJS with room code as peer ID
+            peer = new Peer('poker-' + roomCode, {
+                host: 'peerjs.com',
+                port: 443,
+                path: '/',
+                secure: true,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
                 }
-            }, 500);
+            });
+
+            peer.on('open', (id) => {
+                networkStatusEl.textContent = `Hosting - Room Code: ${roomCode} | ${myNickname} | Seat 1`;
+                console.log('Host peer opened:', id);
+            });
+
+            peer.on('connection', (conn) => {
+                console.log('New connection from:', conn.peer);
+                connections.push(conn);
+
+                conn.on('open', () => {
+                    // Send current state to new peer
+                    conn.send({ type: 'state', state: state });
+                });
+
+                conn.on('data', (data) => {
+                    if (data.type === 'state') {
+                        state = data.state;
+                        render();
+                        // Broadcast to all other connections
+                        broadcastState(conn);
+                    } else if (data.type === 'join') {
+                        // Add new player
+                        state.players.push({
+                            name: data.playerName,
+                            stack: 1000,
+                            bet: 0,
+                            folded: false,
+                            cards: []
+                        });
+                        render();
+                        broadcastState();
+                    }
+                });
+
+                conn.on('close', () => {
+                    connections = connections.filter(c => c !== conn);
+                });
+            });
+
+            peer.on('error', (err) => {
+                console.error('Peer error:', err);
+                networkStatusEl.textContent = `Error: ${err.type}`;
+            });
 
             render();
         }
@@ -860,50 +909,75 @@
             myNickname = playerName.trim();
             roomCode = code;
 
-            // Try to load room state
-            const roomData = localStorage.getItem('poker_room_' + roomCode);
-            if (!roomData) {
-                alert('Room not found! Make sure the host has created the room.');
-                return;
-            }
+            networkStatusEl.textContent = `Connecting to room ${roomCode}...`;
 
-            state = JSON.parse(roomData);
-
-            // Clear all seats and set this player as seat 1
-            state.players = [];
-            state.players.push({
-                name: myNickname,
-                stack: 1000,
-                bet: 0,
-                folded: false,
-                cards: []
+            // Initialize PeerJS
+            peer = new Peer({
+                host: 'peerjs.com',
+                port: 443,
+                path: '/',
+                secure: true,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                }
             });
 
-            mySeatNumber = 0; // This player is now seat 1 (index 0)
-            state.currentPlayerIndex = 0;
+            peer.on('open', (id) => {
+                console.log('Client peer opened:', id);
+                // Connect to host
+                const conn = peer.connect('poker-' + roomCode);
+                connections.push(conn);
 
-            networkStatusEl.textContent = `Room: ${roomCode} | ${myNickname} | Seat 1`;
+                conn.on('open', () => {
+                    networkStatusEl.textContent = `Connected - Room: ${roomCode} | ${myNickname}`;
+                    // Request to join
+                    conn.send({ type: 'join', playerName: myNickname });
+                });
 
-            // Update room state
-            localStorage.setItem('poker_room_' + roomCode, JSON.stringify(state));
-
-            // Poll for updates
-            setInterval(() => {
-                if (!isHost && roomCode) {
-                    const updatedData = localStorage.getItem('poker_room_' + roomCode);
-                    if (updatedData) {
-                        state = JSON.parse(updatedData);
+                conn.on('data', (data) => {
+                    if (data.type === 'state') {
+                        state = data.state;
                         render();
                     }
-                }
-            }, 500);
+                });
 
-            render();
+                conn.on('close', () => {
+                    networkStatusEl.textContent = `Disconnected from room`;
+                });
+
+                conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                    networkStatusEl.textContent = `Connection error: ${err}`;
+                    alert('Failed to connect to room. Make sure the host is online and the room code is correct.');
+                });
+            });
+
+            peer.on('error', (err) => {
+                console.error('Peer error:', err);
+                networkStatusEl.textContent = `Error: ${err.type}`;
+                if (err.type === 'peer-unavailable') {
+                    alert('Room not found! Make sure the host has created the room and is online.');
+                }
+            });
+        }
+
+        function broadcastState(excludeConn = null) {
+            const message = { type: 'state', state: state };
+            connections.forEach(conn => {
+                if (conn !== excludeConn && conn.open) {
+                    conn.send(message);
+                }
+            });
         }
 
         function syncState() {
-            if (roomCode) {
-                localStorage.setItem('poker_room_' + roomCode, JSON.stringify(state));
+            if (isHost) {
+                broadcastState();
+            } else if (connections.length > 0 && connections[0].open) {
+                connections[0].send({ type: 'state', state: state });
             }
         }
 
