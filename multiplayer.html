@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Live Poker Tracker - Single Device</title>
+    <title>Live Poker Tracker - Multiplayer</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" defer></script>
     <style>
         *{box-sizing:border-box}
         :root{font-family:system-ui,-apple-system,sans-serif;--bg-dark:#0a0e17;--bg-dark2:#1a1f2e;--bg-card:rgba(20,32,42,0.6);--bg-card-dark:rgba(12,27,36,0.8);--text:#e6eef8;--text-muted:#9fb0c5;--primary:#ffd166;--primary-dark:#ff8c42;--border:rgba(255,255,255,0.1);--success:rgba(52,211,153,0.3)}
@@ -56,11 +57,15 @@
 </head>
 <body>
     <header>
-        <h1>Live Poker Tracker</h1>
-        <a href="multiplayer.html" style="color:var(--primary);text-decoration:none;font-size:14px">Multiplayer →</a>
+        <h1>Live Poker Tracker - Multiplayer</h1>
+        <a href="index.html" style="color:var(--primary);text-decoration:none;font-size:14px">← Single Device</a>
     </header>
 
     <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="showNetworkToggle">
+            <span>Show Network/Multiplayer Options</span>
+        </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" id="showDigitalCards">
             <span>Digital Cards</span>
@@ -69,6 +74,13 @@
             <input type="checkbox" id="enableBlinds" checked>
             <span>Auto-Post Blinds</span>
         </label>
+    </div>
+
+    <div id="networkControls" class="section hidden">
+        <button id="hostGame">Host Game</button>
+        <input id="joinCode" placeholder="Room Code" style="width:120px">
+        <button id="joinGame">Join Room</button>
+        <div id="networkStatus">Not connected</div>
     </div>
 
     <div id="blindsControls" class="section">
@@ -138,13 +150,15 @@
         const shuffleDeck=d=>{const a=[...d];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
         let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
-        let showDigitalCards=false;
+        let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
+        let syncTimeout=null,showDigitalCards=false;
 
         const $=(id)=>document.getElementById(id);
         const els={
             playerName:$('playerName'),playerStack:$('playerStack'),pot:$('pot'),currentBet:$('currentBet'),
             currentPlayerName:$('currentPlayerName'),streetName:$('streetName'),players:$('players'),
-            communityCardsDisplay:$('communityCardsDisplay'),amount:$('amount'),
+            communityCardsDisplay:$('communityCardsDisplay'),amount:$('amount'),joinCode:$('joinCode'),
+            networkStatus:$('networkStatus'),networkControls:$('networkControls'),
             emptyPotModal:$('emptyPotModal'),winnerSelect:$('winnerSelect'),modalPotAmount:$('modalPotAmount'),
             smallBlind:$('smallBlind'),bigBlind:$('bigBlind'),blindsControls:$('blindsControls')
         };
@@ -194,6 +208,7 @@
             state.players.push({name,stack,bet:0,folded:false,cards:[]});
             els.playerName.value='';
             render();
+            syncState();
         };
 
         const autoAdvanceStreet=()=>{
@@ -203,6 +218,7 @@
             if(!state.deck.length)state.deck=shuffleDeck(createDeck());
             for(let i=0;i<(cardsToAdd[state.street]||0);i++)if(state.deck.length)state.communityCards.push(state.deck.pop());
             render();
+            syncState();
         };
 
         const isBettingRoundComplete=()=>{
@@ -258,7 +274,8 @@
             }
 
             render();
-                    };
+            syncState();
+        };
 
         const bet=()=>{
             if(!state.roundActive)return;
@@ -270,7 +287,8 @@
             state.pot+=amount;
             state.currentBet=Math.max(state.currentBet,p.bet);
             nextPlayer();
-                    };
+            syncState();
+        };
 
         const raise=()=>{
             if(!state.roundActive)return;
@@ -283,7 +301,8 @@
             state.pot+=needed;
             state.currentBet=p.bet;
             nextPlayer();
-                    };
+            syncState();
+        };
 
         const call=()=>{
             if(!state.roundActive)return;
@@ -293,19 +312,22 @@
             p.bet+=toCall;
             state.pot+=toCall;
             nextPlayer();
-                    };
+            syncState();
+        };
 
         const check=()=>{
             if(!state.roundActive)return;
             if(state.players[state.currentPlayerIndex].bet<state.currentBet)return alert('Cannot check, must call or fold');
             nextPlayer();
-                    };
+            syncState();
+        };
 
         const fold=()=>{
             if(!state.roundActive)return;
             state.players[state.currentPlayerIndex].folded=true;
             nextPlayer();
-                    };
+            syncState();
+        };
 
         const nextPlayer=()=>{
             let attempts=0;
@@ -321,13 +343,15 @@
             if(state.players.length<2)return;
             state.buttonPosition=(state.buttonPosition+1)%state.players.length;
             render();
-                    };
+            syncState();
+        };
 
         const resetTable=()=>{
             if(!confirm('Reset the entire table?'))return;
             state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
             render();
-                    };
+            syncState();
+        };
 
         const openEmptyPotModal=()=>{
             if(state.pot===0)return alert('The pot is already empty!');
@@ -353,9 +377,99 @@
             state.currentBet=0;
             closeEmptyPotModal();
             render();
-                        alert(`${winner.name} wins ${amt} chips!`);
+            syncState();
+            alert(`${winner.name} wins ${amt} chips!`);
         };
 
+        const initHost=()=>{
+            if(hasJoined)return alert('You have already joined a room in this session!');
+            const name=prompt('Enter your player name:');
+            if(!name?.trim())return alert('Player name is required to host!');
+            isHost=true;
+            hasJoined=true;
+            myNickname=name.trim();
+            roomCode=Math.random().toString(36).substring(2,8).toUpperCase();
+            state.players=[{name:myNickname,stack:1000,bet:0,folded:false,cards:[]}];
+            mySeatNumber=0;
+            state.currentPlayerIndex=0;
+            els.networkStatus.textContent='Connecting...';
+
+            peer=new Peer('poker-'+roomCode,{host:'0.peerjs.com',port:443,path:'/',secure:true,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
+            peer.on('open',id=>{
+                els.networkStatus.textContent=`Hosting - Room: ${roomCode} | ${myNickname}`;
+                console.log('Host ready:',id);
+            });
+            peer.on('connection',conn=>{
+                console.log('New peer:',conn.peer);
+                connections.push(conn);
+                conn.on('open',()=>conn.send({type:'state',state}));
+                conn.on('data',data=>{
+                    if(data.type==='state'){
+                        state=data.state;
+                        render();
+                        broadcastState(conn);
+                    }else if(data.type==='join'){
+                        state.players.push({name:data.playerName,stack:1000,bet:0,folded:false,cards:[]});
+                        render();
+                        broadcastState();
+                    }
+                });
+                conn.on('close',()=>connections=connections.filter(c=>c!==conn));
+            });
+            peer.on('error',err=>{
+                console.error('Peer error:',err);
+                els.networkStatus.textContent=`Error: ${err.type}`;
+            });
+            render();
+        };
+
+        const joinGame=()=>{
+            if(hasJoined)return alert('You have already joined a room in this session!');
+            const code=els.joinCode.value.trim().toUpperCase();
+            if(!code)return alert('Please enter a room code');
+            const name=prompt('Enter your player name:');
+            if(!name?.trim())return alert('Player name is required to join!');
+            hasJoined=true;
+            myNickname=name.trim();
+            roomCode=code;
+            els.networkStatus.textContent=`Connecting to ${roomCode}...`;
+
+            peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
+            peer.on('open',id=>{
+                console.log('Client ready:',id);
+                const conn=peer.connect('poker-'+roomCode);
+                connections.push(conn);
+                conn.on('open',()=>{
+                    els.networkStatus.textContent=`Connected - Room: ${roomCode} | ${myNickname}`;
+                    conn.send({type:'join',playerName:myNickname});
+                });
+                conn.on('data',data=>{if(data.type==='state'){state=data.state;render()}});
+                conn.on('close',()=>els.networkStatus.textContent='Disconnected');
+                conn.on('error',err=>{
+                    console.error('Connection error:',err);
+                    els.networkStatus.textContent=`Connection error`;
+                    alert('Failed to connect. Check room code and host availability.');
+                });
+            });
+            peer.on('error',err=>{
+                console.error('Peer error:',err);
+                els.networkStatus.textContent=`Error: ${err.type}`;
+                if(err.type==='peer-unavailable')alert('Room not found! Ensure host is online.');
+            });
+        };
+
+        const broadcastState=(exclude=null)=>{
+            const msg={type:'state',state};
+            connections.forEach(c=>{if(c!==exclude&&c.open)c.send(msg)});
+        };
+
+        const syncState=()=>{
+            clearTimeout(syncTimeout);
+            syncTimeout=setTimeout(()=>{
+                if(isHost)broadcastState();
+                else if(connections[0]?.open)connections[0].send({type:'state',state});
+            },50);
+        };
 
         $('addPlayer').onclick=addPlayer;
         $('startRound').onclick=startRound;
@@ -368,11 +482,14 @@
         $('foldBtn').onclick=fold;
         $('nextBtn').onclick=nextPlayer;
         $('advanceRoundBtn').onclick=advanceRound;
+        $('hostGame').onclick=initHost;
+        $('joinGame').onclick=joinGame;
         $('emptyPotBtn').onclick=openEmptyPotModal;
         $('confirmEmptyPot').onclick=awardPotToPlayer;
         $('cancelEmptyPot').onclick=closeEmptyPotModal;
         els.emptyPotModal.onclick=e=>{if(e.target===els.emptyPotModal)closeEmptyPotModal()};
         els.playerName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addPlayer()}});
+        $('showNetworkToggle').addEventListener('change',e=>els.networkControls.classList.toggle('hidden',!e.target.checked));
         $('showDigitalCards').addEventListener('change',e=>{showDigitalCards=e.target.checked;render()});
         $('enableBlinds').addEventListener('change',e=>els.blindsControls.classList.toggle('hidden',!e.target.checked));
 
