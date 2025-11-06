@@ -156,10 +156,16 @@
             els.currentBet.textContent=state.currentBet;
             els.streetName.textContent=state.street?state.street.toUpperCase():'—';
             els.currentPlayerName.textContent=state.roundActive&&state.players.length>0?state.players[state.currentPlayerIndex].name:'—';
-            if(state.communityCards?.length>0){
-                els.communityCardsDisplay.innerHTML=showDigitalCards?state.communityCards.map(createCardElement).join(''):state.communityCards.map(c=>`${c.rank}${c.suit}`).join(' ');
+            const communityCards=document.getElementById('communityCards');
+            if(showDigitalCards){
+                communityCards.style.display='flex';
+                if(state.communityCards?.length>0){
+                    els.communityCardsDisplay.innerHTML=state.communityCards.map(createCardElement).join('');
+                }else{
+                    els.communityCardsDisplay.textContent='—';
+                }
             }else{
-                els.communityCardsDisplay.textContent='—';
+                communityCards.style.display='none';
             }
             els.players.innerHTML=state.players.map((p,i)=>`
                 <div class="player${i===state.currentPlayerIndex&&state.roundActive?' active':''}${p.folded?' folded':''}">
