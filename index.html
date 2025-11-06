@@ -60,7 +60,7 @@
         <h1>Live Poker Tracker</h1>
     </header>
 
-    <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between">
+    <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" id="showNetworkToggle">
             <span>Show Network/Multiplayer Options</span>
@@ -68,6 +68,10 @@
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" id="showDigitalCards">
             <span>Digital Cards</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="enableBlinds" checked>
+            <span>Auto-Post Blinds</span>
         </label>
     </div>
 
@@ -229,8 +233,6 @@
 
         const startRound=()=>{
             if(state.players.length<2)return alert('Need at least 2 players');
-            const sb=parseInt(els.smallBlind.value)||5;
-            const bb=parseInt(els.bigBlind.value)||10;
             state.roundActive=true;
             state.street='preflop';
             state.roundCount=0;
@@ -238,26 +240,34 @@
             state.communityCards=[];
             state.players.forEach(p=>{p.bet=0;p.folded=false;p.cards=p.cards||[]});
 
-            // Post blinds
-            const sbPos=(state.buttonPosition+1)%state.players.length;
-            const bbPos=(state.buttonPosition+2)%state.players.length;
-            const sbPlayer=state.players[sbPos];
-            const bbPlayer=state.players[bbPos];
+            // Post blinds if enabled
+            const blindsEnabled=$('enableBlinds').checked;
+            if(blindsEnabled){
+                const sb=parseInt(els.smallBlind.value)||5;
+                const bb=parseInt(els.bigBlind.value)||10;
+                const sbPos=(state.buttonPosition+1)%state.players.length;
+                const bbPos=(state.buttonPosition+2)%state.players.length;
+                const sbPlayer=state.players[sbPos];
+                const bbPlayer=state.players[bbPos];
 
-            // Small blind
-            const sbAmount=Math.min(sb,sbPlayer.stack);
-            sbPlayer.stack-=sbAmount;
-            sbPlayer.bet=sbAmount;
-            state.pot+=sbAmount;
+                // Small blind
+                const sbAmount=Math.min(sb,sbPlayer.stack);
+                sbPlayer.stack-=sbAmount;
+                sbPlayer.bet=sbAmount;
+                state.pot+=sbAmount;
 
-            // Big blind
-            const bbAmount=Math.min(bb,bbPlayer.stack);
-            bbPlayer.stack-=bbAmount;
-            bbPlayer.bet=bbAmount;
-            state.pot+=bbAmount;
+                // Big blind
+                const bbAmount=Math.min(bb,bbPlayer.stack);
+                bbPlayer.stack-=bbAmount;
+                bbPlayer.bet=bbAmount;
+                state.pot+=bbAmount;
 
-            state.currentBet=bb;
-            state.currentPlayerIndex=(state.buttonPosition+3)%state.players.length;
+                state.currentBet=bb;
+                state.currentPlayerIndex=(state.buttonPosition+3)%state.players.length;
+            }else{
+                state.currentBet=0;
+                state.currentPlayerIndex=state.buttonPosition;
+            }
 
             render();
             syncState();
