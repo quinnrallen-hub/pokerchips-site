@@ -395,7 +395,7 @@
             mySeatNumber=0;
             state.currentPlayerIndex=0;
 
-            peer=new Peer('poker-'+roomCode,{host:'0.peerjs.com',port:443,path:'/',secure:true,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
+            peer=new Peer('poker-'+roomCode);
             peer.on('open',id=>{
                 console.log('Host ready:',id);
             });
@@ -428,7 +428,7 @@
             myNickname=storedName;
             roomCode=storedRoom;
 
-            peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
+            peer=new Peer();
             peer.on('open',id=>{
                 console.log('Client ready:',id);
                 const conn=peer.connect('poker-'+roomCode);

@@ -55,7 +55,7 @@
             roomCode=Math.random().toString(36).substring(2,8).toUpperCase();
             statusEl.textContent='Creating room...';
 
-            peer=new Peer('poker-'+roomCode,{host:'0.peerjs.com',port:443,path:'/',secure:true});
+            peer=new Peer('poker-'+roomCode);
             peer.on('open',()=>{
                 sessionStorage.setItem('pokerRole','host');
                 sessionStorage.setItem('pokerRoomCode',roomCode);
@@ -76,7 +76,7 @@
             roomCode=code;
             statusEl.textContent='Connecting to room...';
 
-            peer=new Peer({host:'0.peerjs.com',port:443,path:'/',secure:true});
+            peer=new Peer();
             peer.on('open',()=>{
                 const conn=peer.connect('poker-'+roomCode);
                 conn.on('open',()=>{
