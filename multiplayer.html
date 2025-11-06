@@ -397,8 +397,24 @@
             state.currentPlayerIndex=0;
 
             document.getElementById('connectionStatus').textContent='Creating room...';
-            peer=new Peer('poker-'+roomCode);
+            peer=new Peer('poker-'+roomCode,{
+                host:'0.peerjs.com',
+                port:443,
+                path:'/',
+                secure:true,
+                debug:2
+            });
+
+            const hostTimeout=setTimeout(()=>{
+                if(!peer||!peer.open){
+                    document.getElementById('connectionStatus').textContent='Connection failed - try again';
+                    document.getElementById('connectionStatus').style.color='#ef4444';
+                    alert('Failed to connect to PeerJS server. Please refresh and try again.');
+                }
+            },10000);
+
             peer.on('open',id=>{
+                clearTimeout(hostTimeout);
                 console.log('Host ready! Room:',roomCode,'Peer ID:',id);
                 document.getElementById('connectionStatus').textContent='✓ Room Active';
                 document.getElementById('connectionStatus').style.color='#34d399';
@@ -442,7 +458,13 @@
             roomCode=storedRoom;
 
             document.getElementById('connectionStatus').textContent='Initializing...';
-            peer=new Peer();
+            peer=new Peer({
+                host:'0.peerjs.com',
+                port:443,
+                path:'/',
+                secure:true,
+                debug:2
+            });
             peer.on('open',id=>{
                 console.log('Client peer ready:',id);
                 document.getElementById('connectionStatus').textContent='Finding room '+roomCode+'...';
