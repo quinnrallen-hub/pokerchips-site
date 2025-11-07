@@ -234,6 +234,23 @@
                 });
             }
             previousCurrentPlayer=state.currentPlayerIndex;
+
+            // Update button states based on turn
+            updateActionButtons();
+        };
+
+        const updateActionButtons=()=>{
+            // Check if it's my turn
+            const isMyTurn=state.roundActive&&
+                           state.players.length>0&&
+                           state.players[state.currentPlayerIndex]?.name===myNickname;
+
+            // Disable/enable action buttons based on turn
+            $('betBtn').disabled=!isMyTurn;
+            $('raiseBtn').disabled=!isMyTurn;
+            $('callBtn').disabled=!isMyTurn;
+            $('checkBtn').disabled=!isMyTurn;
+            $('foldBtn').disabled=!isMyTurn;
         };
 
         const createCardElement=(c,isNew)=>{
