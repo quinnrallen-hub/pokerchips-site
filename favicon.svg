@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="chipGradient" cx="50%" cy="40%">
+      <stop offset="0%" style="stop-color:#ffd166;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+
+  <!-- Poker chip circle -->
+  <circle cx="50" cy="50" r="45" fill="url(#chipGradient)" stroke="#0a0e17" stroke-width="2"/>
+
+  <!-- Chip edge marks -->
+  <g fill="#0a0e17">
+    <rect x="48" y="5" width="4" height="8" rx="1"/>
+    <rect x="48" y="87" width="4" height="8" rx="1"/>
+    <rect x="5" y="48" width="8" height="4" ry="1"/>
+    <rect x="87" y="48" width="8" height="4" ry="1"/>
+    <rect x="20" y="15" width="4" height="8" rx="1" transform="rotate(45 22 19)"/>
+    <rect x="76" y="15" width="4" height="8" rx="1" transform="rotate(-45 78 19)"/>
+    <rect x="20" y="77" width="4" height="8" rx="1" transform="rotate(-45 22 81)"/>
+    <rect x="76" y="77" width="4" height="8" rx="1" transform="rotate(45 78 81)"/>
+  </g>
+
+  <!-- Center circle -->
+  <circle cx="50" cy="50" r="20" fill="none" stroke="#0a0e17" stroke-width="2"/>
+
+  <!-- Spade suit symbol in center -->
+  <g transform="translate(50, 50)">
+    <path d="M 0,-8 C -3,-8 -6,-6 -6,-3 C -6,0 -3,2 0,4 C 3,2 6,0 6,-3 C 6,-6 3,-8 0,-8 Z" fill="#0a0e17"/>
+    <path d="M -2,4 L -3,8 L 3,8 L 2,4 Z" fill="#0a0e17"/>
+  </g>
+</svg>
