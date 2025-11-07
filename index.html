@@ -88,7 +88,7 @@
 
     <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="showDigitalCards">
+            <input type="checkbox" id="showDigitalCards" checked>
             <span>Digital Cards</span>
         </label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -164,7 +164,7 @@
         const shuffleDeck=d=>{const a=[...d];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
         let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
-        let showDigitalCards=false;
+        let showDigitalCards=true;
         let previousCardCount=0;
         let previousCurrentPlayer=-1;
 

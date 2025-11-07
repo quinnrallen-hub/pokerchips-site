@@ -95,7 +95,7 @@
     <div id="gameArea">
         <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                <input type="checkbox" id="showDigitalCards">
+                <input type="checkbox" id="showDigitalCards" checked>
                 <span>Digital Cards</span>
             </label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -173,7 +173,7 @@
 
         let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
-        let syncTimeout=null,showDigitalCards=false,previousCardCount=0,previousCurrentPlayer=-1;
+        let syncTimeout=null,showDigitalCards=true,previousCardCount=0,previousCurrentPlayer=-1;
 
         // Check if coming from connect page
         const storedRole=sessionStorage.getItem('pokerRole');
