@@ -59,12 +59,12 @@
         @keyframes modalSlideIn{from{opacity:0;transform:scale(0.9) translateY(-20px)}to{opacity:1;transform:scale(1) translateY(0)}}
         @keyframes chipPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
         @keyframes potCollect{0%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.8}100%{transform:scale(0);opacity:0}}
-        .card{animation:slideInCard .4s ease-out backwards}
-        .card:nth-child(1){animation-delay:0s}
-        .card:nth-child(2){animation-delay:.1s}
-        .card:nth-child(3){animation-delay:.2s}
-        .card:nth-child(4){animation-delay:.3s}
-        .card:nth-child(5){animation-delay:.4s}
+        .card.new-card{animation:slideInCard .4s ease-out backwards}
+        .card.new-card:nth-child(1){animation-delay:0s}
+        .card.new-card:nth-child(2){animation-delay:.1s}
+        .card.new-card:nth-child(3){animation-delay:.2s}
+        .card.new-card:nth-child(4){animation-delay:.3s}
+        .card.new-card:nth-child(5){animation-delay:.4s}
         .player{animation:fadeInUp .4s ease-out backwards}
         .player:nth-child(1){animation-delay:0s}
         .player:nth-child(2){animation-delay:.05s}
@@ -173,7 +173,7 @@
 
         let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
-        let syncTimeout=null,showDigitalCards=false;
+        let syncTimeout=null,showDigitalCards=false,previousCardCount=0;
 
         // Check if coming from connect page
         const storedRole=sessionStorage.getItem('pokerRole');
@@ -226,9 +226,16 @@
             if(showDigitalCards){
                 communityCards.style.display='flex';
                 if(state.communityCards?.length>0){
-                    els.communityCardsDisplay.innerHTML=state.communityCards.map(createCardElement).join('');
+                    const currentCardCount=state.communityCards.length;
+                    els.communityCardsDisplay.innerHTML=state.communityCards.map((c,i)=>createCardElement(c,i>=previousCardCount)).join('');
+                    previousCardCount=currentCardCount;
+                    setTimeout(()=>{
+                        const newCards=els.communityCardsDisplay.querySelectorAll('.new-card');
+                        newCards.forEach(card=>card.classList.remove('new-card'));
+                    },500);
                 }else{
                     els.communityCardsDisplay.textContent='—';
+                    previousCardCount=0;
                 }
             }else{
                 communityCards.style.display='none';
@@ -250,9 +257,9 @@
             }).join('');
         };
 
-        const createCardElement=c=>{
+        const createCardElement=(c,isNew)=>{
             const isRed=c.suit==='♥'||c.suit==='♦';
-            return`<div class="card ${isRed?'red':'black'}"><div class="card-rank">${c.rank}</div><div class="card-suit">${c.suit}</div><div class="card-rank-bottom">${c.rank}</div></div>`;
+            return`<div class="card ${isRed?'red':'black'}${isNew?' new-card':''}"><div class="card-rank">${c.rank}</div><div class="card-suit">${c.suit}</div><div class="card-rank-bottom">${c.rank}</div></div>`;
         };
 
         const addPlayer=()=>{
@@ -296,6 +303,7 @@
             state.roundCount=0;
             state.deck=shuffleDeck(createDeck());
             state.communityCards=[];
+            previousCardCount=0;
             state.players.forEach(p=>{p.bet=0;p.folded=false;p.cards=p.cards||[]});
 
             // Post blinds if enabled
