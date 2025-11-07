@@ -23,6 +23,11 @@
         .status{margin-top:24px;padding:12px;background:var(--bg-card-dark);border-radius:8px;font-size:14px;color:var(--text-muted)}
         a{color:var(--primary);text-decoration:none;font-size:14px;display:inline-block;margin-top:24px}
         a:hover{text-decoration:underline}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .connect-box{animation:fadeIn .6s ease-out}
+        button{position:relative;overflow:hidden}
+        button::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:rgba(255,209,102,0.3);transform:translate(-50%,-50%);transition:width .6s,height .6s}
+        button:active::after{width:300px;height:300px}
     </style>
 </head>
 <body>

@@ -51,6 +51,32 @@
         .modal-buttons{display:flex;gap:12px;justify-content:flex-end}
         .modal-buttons button{margin:0}
         input[type="checkbox"]{width:18px;height:18px;margin:0 8px 0 0;cursor:pointer}
+        @keyframes slideInCard{from{opacity:0;transform:translateX(-100px) rotate(-10deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+        @keyframes popIn{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes modalSlideIn{from{opacity:0;transform:scale(0.9) translateY(-20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        @keyframes chipPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+        @keyframes potCollect{0%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.8}100%{transform:scale(0);opacity:0}}
+        .card{animation:slideInCard .4s ease-out backwards}
+        .card:nth-child(1){animation-delay:0s}
+        .card:nth-child(2){animation-delay:.1s}
+        .card:nth-child(3){animation-delay:.2s}
+        .card:nth-child(4){animation-delay:.3s}
+        .card:nth-child(5){animation-delay:.4s}
+        .player{animation:fadeInUp .4s ease-out backwards}
+        .player:nth-child(1){animation-delay:0s}
+        .player:nth-child(2){animation-delay:.05s}
+        .player:nth-child(3){animation-delay:.1s}
+        .player:nth-child(4){animation-delay:.15s}
+        .player:nth-child(5){animation-delay:.2s}
+        .player:nth-child(6){animation-delay:.25s}
+        .modal.active{animation:modalFadeIn .2s ease-out}
+        .modal.active .modal-content{animation:modalSlideIn .3s ease-out}
+        button{position:relative;overflow:hidden}
+        button::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:rgba(255,209,102,0.3);transform:translate(-50%,-50%);transition:width .6s,height .6s}
+        button:active::after{width:300px;height:300px}
+        .chip-update{animation:chipPulse .3s ease-out}
         @media(max-width:768px){body{padding:12px}.section{padding:12px}#info{gap:12px;font-size:14px}#info span{font-size:18px}.card{width:50px;height:70px}.card-rank,.card-rank-bottom{font-size:16px}.card-suit{font-size:24px}}
     </style>
 </head>
@@ -149,9 +175,31 @@
             smallBlind:$('smallBlind'),bigBlind:$('bigBlind'),blindsControls:$('blindsControls')
         };
 
+        const animateNumber=(el,newValue)=>{
+            const oldValue=parseInt(el.textContent)||0;
+            if(oldValue===newValue)return;
+            el.classList.add('chip-update');
+            setTimeout(()=>el.classList.remove('chip-update'),300);
+            if(Math.abs(newValue-oldValue)>100){
+                let current=oldValue;
+                const step=(newValue-oldValue)/10;
+                const interval=setInterval(()=>{
+                    current+=step;
+                    if((step>0&&current>=newValue)||(step<0&&current<=newValue)){
+                        el.textContent=newValue;
+                        clearInterval(interval);
+                    }else{
+                        el.textContent=Math.round(current);
+                    }
+                },20);
+            }else{
+                el.textContent=newValue;
+            }
+        };
+
         const render=()=>{
-            els.pot.textContent=state.pot;
-            els.currentBet.textContent=state.currentBet;
+            animateNumber(els.pot,state.pot);
+            animateNumber(els.currentBet,state.currentBet);
             els.streetName.textContent=state.street?state.street.toUpperCase():'—';
             els.currentPlayerName.textContent=state.roundActive&&state.players.length>0?state.players[state.currentPlayerIndex].name:'—';
             const communityCards=document.getElementById('communityCards');
@@ -347,13 +395,20 @@
             if(idx==='')return alert('Please select a player!');
             const winner=state.players[parseInt(idx)];
             const amt=state.pot;
-            winner.stack+=amt;
-            state.pot=0;
-            state.players.forEach(p=>p.bet=0);
-            state.currentBet=0;
-            closeEmptyPotModal();
-            render();
-                        alert(`${winner.name} wins ${amt} chips!`);
+
+            // Animate pot collection
+            const potEl=els.pot;
+            potEl.style.animation='potCollect .5s ease-out';
+            setTimeout(()=>{
+                winner.stack+=amt;
+                state.pot=0;
+                state.players.forEach(p=>p.bet=0);
+                state.currentBet=0;
+                closeEmptyPotModal();
+                potEl.style.animation='';
+                render();
+                alert(`${winner.name} wins ${amt} chips!`);
+            },500);
         };
 
 
