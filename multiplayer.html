@@ -173,7 +173,7 @@
 
         let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
-        let syncTimeout=null,showDigitalCards=false,previousCardCount=0;
+        let syncTimeout=null,showDigitalCards=false,previousCardCount=0,previousCurrentPlayer=-1;
 
         // Check if coming from connect page
         const storedRole=sessionStorage.getItem('pokerRole');
@@ -243,21 +243,54 @@
             }else{
                 communityCards.style.display='none';
             }
-            els.players.innerHTML=state.players.map((p,i)=>{
-                const isButton=i===state.buttonPosition;
-                const isSB=i===(state.buttonPosition+1)%state.players.length;
-                const isBB=i===(state.buttonPosition+2)%state.players.length;
-                let position='';
-                if(isButton)position=' (BTN)';
-                else if(isSB)position=' (SB)';
-                else if(isBB)position=' (BB)';
-                return`<div class="player${i===state.currentPlayerIndex&&state.roundActive?' active':''}${p.folded?' folded':''}">
-                    <div class="player-name">Seat ${i+1}: ${p.name}${position}</div>
-                    <div class="player-info">Stack: ${p.stack}</div>
-                    <div class="player-info">Bet: ${p.bet}</div>
-                    ${p.folded?'<div class="player-info">FOLDED</div>':''}
-                </div>`
-            }).join('');
+
+            // Only re-render all players if player count changed or it's a full refresh
+            const playerCountChanged=els.players.children.length!==state.players.length;
+            if(playerCountChanged){
+                els.players.innerHTML=state.players.map((p,i)=>{
+                    const isButton=i===state.buttonPosition;
+                    const isSB=i===(state.buttonPosition+1)%state.players.length;
+                    const isBB=i===(state.buttonPosition+2)%state.players.length;
+                    let position='';
+                    if(isButton)position=' (BTN)';
+                    else if(isSB)position=' (SB)';
+                    else if(isBB)position=' (BB)';
+                    return`<div class="player${i===state.currentPlayerIndex&&state.roundActive?' active':''}${p.folded?' folded':''}" data-player-index="${i}">
+                        <div class="player-name">Seat ${i+1}: ${p.name}${position}</div>
+                        <div class="player-info">Stack: ${p.stack}</div>
+                        <div class="player-info">Bet: ${p.bet}</div>
+                        ${p.folded?'<div class="player-info">FOLDED</div>':''}
+                    </div>`
+                }).join('');
+            }else{
+                // Update only changed players
+                state.players.forEach((p,i)=>{
+                    const playerEl=els.players.children[i];
+                    if(!playerEl)return;
+
+                    // Update active class
+                    const shouldBeActive=i===state.currentPlayerIndex&&state.roundActive;
+                    if(shouldBeActive&&!playerEl.classList.contains('active')){
+                        playerEl.classList.add('active');
+                    }else if(!shouldBeActive&&playerEl.classList.contains('active')){
+                        playerEl.classList.remove('active');
+                    }
+
+                    // Update folded class
+                    if(p.folded&&!playerEl.classList.contains('folded')){
+                        playerEl.classList.add('folded');
+                    }else if(!p.folded&&playerEl.classList.contains('folded')){
+                        playerEl.classList.remove('folded');
+                    }
+
+                    // Update stack and bet text
+                    const stackEl=playerEl.querySelector('.player-info:nth-child(2)');
+                    const betEl=playerEl.querySelector('.player-info:nth-child(3)');
+                    if(stackEl)stackEl.textContent=`Stack: ${p.stack}`;
+                    if(betEl)betEl.textContent=`Bet: ${p.bet}`;
+                });
+            }
+            previousCurrentPlayer=state.currentPlayerIndex;
         };
 
         const createCardElement=(c,isNew)=>{
