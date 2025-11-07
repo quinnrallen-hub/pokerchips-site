@@ -402,6 +402,19 @@
                     };
 
         const nextPlayer=()=>{
+            // Check if only one player remains unfolded
+            const activePlayers=state.players.filter(p=>!p.folded);
+            if(activePlayers.length===1&&state.roundActive){
+                const winner=activePlayers[0];
+                const potAmount=state.pot;
+                winner.stack+=potAmount;
+                setTimeout(()=>{
+                    alert(`${winner.name} wins ${potAmount} chips! (All others folded)`);
+                    resetTable();
+                },100);
+                return;
+            }
+
             let attempts=0;
             do{
                 state.currentPlayerIndex=(state.currentPlayerIndex+1)%state.players.length;
