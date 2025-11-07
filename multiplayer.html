@@ -113,7 +113,33 @@
         const createDeck=()=>suits.flatMap(s=>ranks.map(r=>({rank:r,suit:s})));
         const shuffleDeck=d=>{const a=[...d];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
-        let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0,lastAggressor:-1,minRaise:0};
+        const calculateSidePots=()=>{
+            // Get players who contributed to the pot
+            const playersWithBets=state.players.filter(p=>p.bet>0||!p.folded);
+            if(playersWithBets.length===0)return[];
+
+            // Sort by bet amount
+            const sorted=[...playersWithBets].sort((a,b)=>a.bet-b.bet);
+            const pots=[];
+            let previousLevel=0;
+
+            for(let i=0;i<sorted.length;i++){
+                const currentLevel=sorted[i].bet;
+                if(currentLevel<=previousLevel)continue;
+
+                const potAmount=(currentLevel-previousLevel)*sorted.slice(i).length;
+                if(potAmount>0){
+                    pots.push({
+                        amount:potAmount,
+                        eligiblePlayers:sorted.slice(i).map(p=>p.name)
+                    });
+                }
+                previousLevel=currentLevel;
+            }
+            return pots;
+        };
+
+        let state={players:[],pot:0,sidePots:[],currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0,lastAggressor:-1,minRaise:0};
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
         let syncTimeout=null,showDigitalCards=true,previousCardCount=0,previousCurrentPlayer=-1,actionCount=0,animationTimeout=null;
 
@@ -160,6 +186,12 @@
         };
 
         const render=()=>{
+            // Calculate side pots if there are all-ins
+            const hasAllIns=state.players.some(p=>!p.folded&&p.stack===0&&p.bet>0);
+            if(hasAllIns&&state.pot>0){
+                state.sidePots=calculateSidePots();
+            }
+
             animateNumber(els.pot,state.pot);
             animateNumber(els.currentBet,state.currentBet);
             els.streetName.textContent=state.street?state.street.toUpperCase():'—';
@@ -304,6 +336,7 @@
 
         const advanceRound=()=>{
             if(!isBettingRoundComplete())return alert('All players must match the current bet first!');
+            state.sidePots=[]; // Clear side pots at end of betting round
             state.players.forEach(p=>p.bet=0);
             state.currentBet=0;
             state.minRaise=0;
@@ -493,6 +526,7 @@
 
         const resetTable=()=>{
             state.pot=0;
+            state.sidePots=[];
             state.currentBet=0;
             state.currentPlayerIndex=0;
             state.roundActive=false;
