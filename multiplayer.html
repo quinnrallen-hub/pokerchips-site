@@ -113,9 +113,9 @@
         const createDeck=()=>suits.flatMap(s=>ranks.map(r=>({rank:r,suit:s})));
         const shuffleDeck=d=>{const a=[...d];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
-        let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
+        let state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0,lastAggressor:-1,minRaise:0};
         let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
-        let syncTimeout=null,showDigitalCards=true,previousCardCount=0,previousCurrentPlayer=-1,animationTimeout=null;
+        let syncTimeout=null,showDigitalCards=true,previousCardCount=0,previousCurrentPlayer=-1,actionCount=0,animationTimeout=null;
 
         // Check if coming from connect page
         const storedRole=sessionStorage.getItem('pokerRole');
@@ -279,6 +279,11 @@
             const cardsToAdd={flop:3,turn:1,river:1};
             state.street=streets[state.street]||'showdown';
             if(!state.deck.length)state.deck=shuffleDeck(createDeck());
+
+            // Burn a card before dealing (Texas Hold'em rule)
+            if(cardsToAdd[state.street]&&state.deck.length)state.deck.pop();
+
+            // Deal community cards
             for(let i=0;i<(cardsToAdd[state.street]||0);i++)if(state.deck.length)state.communityCards.push(state.deck.pop());
             render();
             syncState();
@@ -286,14 +291,35 @@
 
         const isBettingRoundComplete=()=>{
             const active=state.players.filter(p=>!p.folded);
-            return active.length<=1||active.every(p=>p.bet===state.currentBet||p.stack===0);
+            if(active.length<=1)return true;
+
+            // All active players must have equal bets (or be all-in)
+            const allBetsEqual=active.every(p=>p.bet===state.currentBet||p.stack===0);
+            if(!allBetsEqual)return false;
+
+            // Everyone must have had a chance to act
+            const activePlayers=state.players.filter(p=>!p.folded).length;
+            return actionCount>=activePlayers;
         };
 
         const advanceRound=()=>{
             if(!isBettingRoundComplete())return alert('All players must match the current bet first!');
             state.players.forEach(p=>p.bet=0);
             state.currentBet=0;
-            state.currentPlayerIndex=0;
+            state.minRaise=0;
+            state.lastAggressor=-1;
+            actionCount=0;
+
+            // Action starts from button+1 on post-flop streets
+            state.currentPlayerIndex=(state.buttonPosition+1)%state.players.length;
+
+            // Skip folded players
+            let attempts=0;
+            while(state.players[state.currentPlayerIndex].folded&&attempts<state.players.length){
+                state.currentPlayerIndex=(state.currentPlayerIndex+1)%state.players.length;
+                attempts++;
+            }
+
             state.roundCount++;
             autoAdvanceStreet();
         };
@@ -306,15 +332,21 @@
             state.deck=shuffleDeck(createDeck());
             state.communityCards=[];
             previousCardCount=0;
+            actionCount=0;
+            state.lastAggressor=-1;
             state.players.forEach(p=>{p.bet=0;p.folded=false;p.cards=p.cards||[]});
+
+            const isHeadsUp=state.players.length===2;
 
             // Post blinds if enabled
             const blindsEnabled=$('enableBlinds').checked;
             if(blindsEnabled){
                 const sb=parseInt(els.smallBlind.value)||CONFIG.DEFAULT_SB;
                 const bb=parseInt(els.bigBlind.value)||CONFIG.DEFAULT_BB;
-                const sbPos=(state.buttonPosition+1)%state.players.length;
-                const bbPos=(state.buttonPosition+2)%state.players.length;
+
+                // Heads-up: Button posts SB, other player posts BB
+                const sbPos=isHeadsUp?state.buttonPosition:(state.buttonPosition+1)%state.players.length;
+                const bbPos=isHeadsUp?(state.buttonPosition+1)%state.players.length:(state.buttonPosition+2)%state.players.length;
                 const sbPlayer=state.players[sbPos];
                 const bbPlayer=state.players[bbPos];
 
@@ -331,9 +363,14 @@
                 state.pot+=bbAmount;
 
                 state.currentBet=bb;
-                state.currentPlayerIndex=(state.buttonPosition+3)%state.players.length;
+                state.minRaise=bb;
+
+                // Heads-up: Button (SB) acts first preflop
+                // 3+ players: UTG (button+3) acts first preflop
+                state.currentPlayerIndex=isHeadsUp?state.buttonPosition:(state.buttonPosition+3)%state.players.length;
             }else{
                 state.currentBet=0;
+                state.minRaise=0;
                 state.currentPlayerIndex=state.buttonPosition;
             }
 
@@ -346,26 +383,47 @@
             const amount=parseInt(els.amount.value);
             if(isNaN(amount)||amount<=0)return alert('Please enter a valid bet amount');
             const p=state.players[state.currentPlayerIndex];
+
+            // Can't bet if there's already a bet
+            if(state.currentBet>0)return alert('There is already a bet. Use Raise instead.');
+
             if(amount>p.stack)return alert('Not enough chips');
             p.stack-=amount;
             p.bet+=amount;
             state.pot+=amount;
-            state.currentBet=Math.max(state.currentBet,p.bet);
+            state.currentBet=p.bet;
+            state.minRaise=amount;
+            state.lastAggressor=state.currentPlayerIndex;
+            actionCount=0;
             nextPlayer();
             syncState();
         };
 
         const raise=()=>{
             if(!state.roundActive)return;
-            const amount=parseInt(els.amount.value);
-            if(isNaN(amount)||amount<=0)return alert('Please enter a valid raise amount');
+            const raiseAmount=parseInt(els.amount.value);
+            if(isNaN(raiseAmount)||raiseAmount<=0)return alert('Please enter a valid raise amount');
+
+            // Enforce minimum raise rule
+            if(state.minRaise>0&&raiseAmount<state.minRaise){
+                return alert(`Minimum raise is ${state.minRaise}. You must raise by at least ${state.minRaise}.`);
+            }
+
             const p=state.players[state.currentPlayerIndex];
-            const needed=(state.currentBet-p.bet)+amount;
+            const toCall=state.currentBet-p.bet;
+            const needed=toCall+raiseAmount;
+
             if(needed>p.stack)return alert('Not enough chips');
+
             p.stack-=needed;
             p.bet+=needed;
             state.pot+=needed;
+
+            const previousBet=state.currentBet;
             state.currentBet=p.bet;
+            state.minRaise=p.bet-previousBet;
+            state.lastAggressor=state.currentPlayerIndex;
+            actionCount=0;
             nextPlayer();
             syncState();
         };
@@ -377,6 +435,7 @@
             p.stack-=toCall;
             p.bet+=toCall;
             state.pot+=toCall;
+            actionCount++;
             nextPlayer();
             syncState();
         };
@@ -384,6 +443,7 @@
         const check=()=>{
             if(!state.roundActive)return;
             if(state.players[state.currentPlayerIndex].bet<state.currentBet)return alert('Cannot check, must call or fold');
+            actionCount++;
             nextPlayer();
             syncState();
         };
@@ -391,6 +451,7 @@
         const fold=()=>{
             if(!state.roundActive)return;
             state.players[state.currentPlayerIndex].folded=true;
+            actionCount++;
             nextPlayer();
             syncState();
         };
@@ -414,8 +475,13 @@
                 state.currentPlayerIndex=(state.currentPlayerIndex+1)%state.players.length;
                 attempts++;
             }while(state.players[state.currentPlayerIndex].folded&&attempts<state.players.length);
-            if(state.currentPlayerIndex===0&&isBettingRoundComplete())advanceRound();
-            render();
+
+            // Check if betting round is complete after moving to next player
+            if(isBettingRoundComplete()){
+                advanceRound();
+            }else{
+                render();
+            }
         };
 
         const moveButton=()=>{
