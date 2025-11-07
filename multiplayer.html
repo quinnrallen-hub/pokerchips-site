@@ -227,12 +227,15 @@
                 communityCards.style.display='flex';
                 if(state.communityCards?.length>0){
                     const currentCardCount=state.communityCards.length;
-                    els.communityCardsDisplay.innerHTML=state.communityCards.map((c,i)=>createCardElement(c,i>=previousCardCount)).join('');
-                    previousCardCount=currentCardCount;
-                    setTimeout(()=>{
-                        const newCards=els.communityCardsDisplay.querySelectorAll('.new-card');
-                        newCards.forEach(card=>card.classList.remove('new-card'));
-                    },500);
+                    const hasNewCards=currentCardCount>previousCardCount;
+                    els.communityCardsDisplay.innerHTML=state.communityCards.map((c,i)=>createCardElement(c,hasNewCards&&i>=previousCardCount)).join('');
+                    if(hasNewCards){
+                        previousCardCount=currentCardCount;
+                        setTimeout(()=>{
+                            const newCards=els.communityCardsDisplay.querySelectorAll('.new-card');
+                            newCards.forEach(card=>card.classList.remove('new-card'));
+                        },500);
+                    }
                 }else{
                     els.communityCardsDisplay.textContent='—';
                     previousCardCount=0;
