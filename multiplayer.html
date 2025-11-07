@@ -78,7 +78,33 @@
         button::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:rgba(255,209,102,0.3);transform:translate(-50%,-50%);transition:width .6s,height .6s}
         button:active::after{width:300px;height:300px}
         .chip-update{animation:chipPulse .3s ease-out}
-        @media(max-width:768px){body{padding:12px}.section{padding:12px}#info{gap:12px;font-size:14px}#info span{font-size:18px}.card{width:50px;height:70px}.card-rank,.card-rank-bottom{font-size:16px}.card-suit{font-size:24px}}
+        @media(max-width:768px){
+            body{padding:8px}
+            header{flex-direction:column;gap:8px;padding:12px;text-align:center}
+            header>div{display:flex;flex-direction:column;gap:4px;font-size:12px}
+            h1{font-size:20px}
+            .section{padding:8px;gap:6px}
+            button,input,select{font-size:13px;padding:8px 12px;margin:2px}
+            #info{gap:8px;font-size:13px;padding:12px}
+            #info>div{min-width:auto}
+            #info span{font-size:16px}
+            #table{padding:16px}
+            #players{grid-template-columns:1fr;gap:12px}
+            .player{padding:12px}
+            .player-name{font-size:15px}
+            .player-info{font-size:13px}
+            #communityCards{padding:16px;min-height:100px;gap:12px}
+            #communityCards>span:first-child{font-size:12px}
+            #communityCardsDisplay{gap:6px}
+            .card{width:45px;height:63px;margin:0 2px}
+            .card-rank,.card-rank-bottom{font-size:14px;top:2px;left:4px}
+            .card-rank-bottom{bottom:2px;right:4px}
+            .card-suit{font-size:22px}
+            #actions{flex-direction:column}
+            #actions input{width:100%}
+            #actions button{width:100%}
+            .modal-content{padding:24px;width:95%}
+        }
     </style>
 </head>
 <body>
