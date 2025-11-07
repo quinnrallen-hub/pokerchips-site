@@ -384,8 +384,17 @@
                     };
 
         const resetTable=()=>{
-            if(!confirm('Reset the entire table?'))return;
-            state={players:[],pot:0,currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0};
+            if(!confirm('Reset the board? (Players and stacks will be preserved)'))return;
+            state.pot=0;
+            state.currentBet=0;
+            state.currentPlayerIndex=0;
+            state.roundActive=false;
+            state.deck=[];
+            state.communityCards=[];
+            state.street='preflop';
+            state.roundCount=0;
+            state.players.forEach(p=>{p.bet=0;p.folded=false});
+            previousCardCount=0;
             render();
                     };
 
