@@ -1,0 +1,655 @@
+/* Live Poker Tracker - Shared Styles */
+
+/* Reset & Variables */
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    font-family: system-ui, -apple-system, sans-serif;
+    --bg-dark: #0a0e17;
+    --bg-dark2: #1a1f2e;
+    --bg-card: rgba(20, 32, 42, 0.6);
+    --bg-card-dark: rgba(12, 27, 36, 0.8);
+    --text: #e6eef8;
+    --text-muted: #9fb0c5;
+    --primary: #ffd166;
+    --primary-dark: #ff8c42;
+    --border: rgba(255, 255, 255, 0.1);
+    --success: rgba(52, 211, 153, 0.3);
+}
+
+/* Base Layout */
+body {
+    margin: 0;
+    padding: 24px;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-dark2) 100%);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+h1 {
+    font-size: 24px;
+    margin: 0;
+    color: var(--primary); /* Fallback for accessibility */
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+}
+
+/* Form Elements */
+button, input, select {
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(21, 35, 47, 0.8);
+    color: var(--text);
+    margin: 4px;
+    transition: all .2s ease;
+    font-weight: 500;
+}
+
+button {
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+button:hover {
+    background: rgba(26, 42, 56, 0.9);
+    border-color: rgba(255, 209, 102, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 209, 102, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Button ripple effect */
+button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 209, 102, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width .6s, height .6s;
+}
+
+button:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+input[type="number"], input[type="text"] {
+    background: var(--bg-card-dark);
+    border: 1px solid var(--border);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.1);
+}
+
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0 8px 0 0;
+    cursor: pointer;
+}
+
+/* Accessibility: Focus indicator for checkboxes */
+input[type="checkbox"]:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Sections */
+.section {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.section.hidden {
+    display: none;
+}
+
+#networkStatus {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 8px 12px;
+    background: var(--bg-card-dark);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Game Table */
+#table {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    padding: 24px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+#info {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 16px;
+    background: var(--bg-card-dark);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+}
+
+#info > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#info span {
+    font-size: 20px;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Players */
+#players {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.player {
+    background: var(--bg-card-dark);
+    padding: 16px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    transition: all .3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.player:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.player.active {
+    border-color: var(--primary);
+    background: rgba(255, 209, 102, 0.05);
+    box-shadow: 0 0 20px rgba(255, 209, 102, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.player.folded {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+}
+
+.player-name {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.player-info {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 4px 0;
+}
+
+/* Community Cards */
+#communityCards {
+    margin-bottom: 20px;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(16, 38, 28, 0.9) 0%, var(--bg-card-dark) 100%);
+    border-radius: 16px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 2px solid var(--success);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+#communityCards > span:first-child {
+    font-size: 14px;
+    color: #34d399;
+    margin-right: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#communityCardsDisplay {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Cards */
+.card {
+    display: inline-block;
+    width: 60px;
+    height: 84px;
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
+    position: relative;
+    font-weight: 700;
+    margin: 0 4px;
+    transition: transform .2s ease;
+    will-change: transform;
+}
+
+.card:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.card-rank {
+    font-size: 20px;
+    line-height: 1;
+    position: absolute;
+    top: 4px;
+    left: 6px;
+}
+
+.card-suit {
+    font-size: 32px;
+    line-height: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.card-rank-bottom {
+    font-size: 20px;
+    line-height: 1;
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    transform: rotate(180deg);
+}
+
+.card.red {
+    color: #dc2626;
+}
+
+.card.black {
+    color: #1f2937;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: rgba(20, 32, 42, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 32px;
+    border-radius: 16px;
+    border: 2px solid rgba(255, 209, 102, 0.3);
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.modal-content h2 {
+    margin: 0 0 20px 0;
+    color: var(--primary);
+    font-size: 24px;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.modal-content select {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.modal-buttons button {
+    margin: 0;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 209, 102, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(255, 209, 102, 0.5), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+}
+
+@keyframes slideInCard {
+    from {
+        opacity: 0;
+        transform: translateX(-100px) rotate(-10deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) rotate(0);
+    }
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes chipPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes potCollect {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+/* Animation Classes */
+.card.new-card {
+    animation: slideInCard .4s ease-out backwards;
+}
+
+.card.new-card:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.card.new-card:nth-child(2) {
+    animation-delay: .1s;
+}
+
+.card.new-card:nth-child(3) {
+    animation-delay: .2s;
+}
+
+.card.new-card:nth-child(4) {
+    animation-delay: .3s;
+}
+
+.card.new-card:nth-child(5) {
+    animation-delay: .4s;
+}
+
+.player {
+    animation: fadeInUp .4s ease-out backwards;
+}
+
+.player:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.player:nth-child(2) {
+    animation-delay: .05s;
+}
+
+.player:nth-child(3) {
+    animation-delay: .1s;
+}
+
+.player:nth-child(4) {
+    animation-delay: .15s;
+}
+
+.player:nth-child(5) {
+    animation-delay: .2s;
+}
+
+.player:nth-child(6) {
+    animation-delay: .25s;
+}
+
+.modal.active {
+    animation: modalFadeIn .2s ease-out;
+}
+
+.modal.active .modal-content {
+    animation: modalSlideIn .3s ease-out;
+}
+
+.chip-update {
+    animation: chipPulse .3s ease-out;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 8px;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    .section {
+        padding: 8px;
+        gap: 6px;
+    }
+
+    button, input, select {
+        font-size: 13px;
+        padding: 8px 12px;
+        margin: 2px;
+    }
+
+    #info {
+        gap: 8px;
+        font-size: 13px;
+        padding: 12px;
+    }
+
+    #info > div {
+        min-width: auto;
+    }
+
+    #info span {
+        font-size: 16px;
+    }
+
+    #table {
+        padding: 16px;
+    }
+
+    #players {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .player {
+        padding: 12px;
+    }
+
+    .player-name {
+        font-size: 15px;
+    }
+
+    .player-info {
+        font-size: 13px;
+    }
+
+    #communityCards {
+        padding: 16px;
+        min-height: 100px;
+        gap: 12px;
+    }
+
+    #communityCards > span:first-child {
+        font-size: 12px;
+    }
+
+    #communityCardsDisplay {
+        gap: 6px;
+    }
+
+    .card {
+        width: 48px; /* Increased from 45px for better tap target (accessibility) */
+        height: 67px;
+        margin: 0 2px;
+    }
+
+    .card-rank, .card-rank-bottom {
+        font-size: 14px;
+        top: 2px;
+        left: 4px;
+    }
+
+    .card-rank-bottom {
+        bottom: 2px;
+        right: 4px;
+    }
+
+    .card-suit {
+        font-size: 22px;
+    }
+
+    #actions {
+        flex-direction: column;
+    }
+
+    #actions input {
+        width: 100%;
+    }
+
+    #actions button {
+        width: 100%;
+    }
+
+    .modal-content {
+        padding: 24px;
+        width: 95%;
+    }
+}

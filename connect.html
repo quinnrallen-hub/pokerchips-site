@@ -4,30 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Connect - Multiplayer Poker</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        *{box-sizing:border-box}
-        :root{font-family:system-ui,-apple-system,sans-serif;--bg-dark:#0a0e17;--bg-dark2:#1a1f2e;--bg-card:rgba(20,32,42,0.6);--bg-card-dark:rgba(12,27,36,0.8);--text:#e6eef8;--text-muted:#9fb0c5;--primary:#ffd166;--primary-dark:#ff8c42;--border:rgba(255,255,255,0.1)}
-        body{margin:0;padding:24px;background:linear-gradient(135deg,var(--bg-dark) 0%,var(--bg-dark2) 100%);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center}
-        button,input{font-size:16px;padding:12px 24px;border-radius:8px;border:1px solid var(--border);background:rgba(21,35,47,0.8);color:var(--text);margin:8px;transition:all .2s ease;font-weight:500}
-        button{cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
-        button:hover{background:rgba(26,42,56,0.9);border-color:rgba(255,209,102,0.3);transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,209,102,0.2)}
-        button:active{transform:translateY(0)}
-        button:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-        input{background:var(--bg-card-dark);border:1px solid var(--border);width:220px;text-align:center}
-        input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,209,102,0.1)}
-        .connect-box{background:var(--bg-card);backdrop-filter:blur(10px);padding:48px;border-radius:16px;border:1px solid var(--border);box-shadow:0 16px 48px rgba(0,0,0,0.6);text-align:center;max-width:500px;width:90%}
-        h1{font-size:32px;margin:0 0 16px 0;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800}
+        /* Connect page specific styles */
+        body{display:flex;align-items:center;justify-content:center}
+        button,input{font-size:16px;padding:12px 24px;margin:8px}
+        input{width:220px;text-align:center}
+        .connect-box{background:var(--bg-card);backdrop-filter:blur(10px);padding:48px;border-radius:16px;border:1px solid var(--border);box-shadow:0 16px 48px rgba(0,0,0,0.6);text-align:center;max-width:500px;width:90%;animation:fadeIn .6s ease-out}
+        h1{font-size:32px;margin:0 0 16px 0}
         p{color:var(--text-muted);margin:0 0 32px 0;font-size:16px}
         .divider{margin:24px 0;color:var(--text-muted);font-size:14px;text-transform:uppercase;letter-spacing:1px}
         .status{margin-top:24px;padding:12px;background:var(--bg-card-dark);border-radius:8px;font-size:14px;color:var(--text-muted)}
         a{color:var(--primary);text-decoration:none;font-size:14px;display:inline-block;margin-top:24px}
         a:hover{text-decoration:underline}
         @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        .connect-box{animation:fadeIn .6s ease-out}
-        button{position:relative;overflow:hidden}
-        button::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:rgba(255,209,102,0.3);transform:translate(-50%,-50%);transition:width .6s,height .6s}
-        button:active::after{width:300px;height:300px}
         @media(max-width:768px){
             body{padding:16px}
             .connect-box{padding:32px 24px;width:95%}
