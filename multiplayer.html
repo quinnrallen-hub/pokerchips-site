@@ -606,15 +606,12 @@
 
             document.getElementById('connectionStatus').textContent='Creating room...';
             peer=new Peer('poker-'+roomCode,{
-                host: 'pokerchips-site.onrender.com',
-                port: 443,
-                path: '/poker',
-                secure: true,
                 debug: 2,
                 config: {
                     iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' }
+                        { urls: 'stun:global.stun.twilio.com:3478' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
                     ]
                 }
             });
@@ -673,15 +670,12 @@
 
             document.getElementById('connectionStatus').textContent='Initializing...';
             peer=new Peer({
-                host: 'pokerchips-site.onrender.com',
-                port: 443,
-                path: '/poker',
-                secure: true,
                 debug: 2,
                 config: {
                     iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' }
+                        { urls: 'stun:global.stun.twilio.com:3478' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
                     ]
                 }
             });
