@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poker-tracker-v1';
+const CACHE_NAME = 'poker-tracker-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -25,6 +25,11 @@ self.addEventListener('install', event => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
+  // Skip caching for external resources (Google Analytics, etc.)
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -51,6 +56,9 @@ self.addEventListener('fetch', event => {
             });
 
           return response;
+        }).catch(() => {
+          // Network failed, no cached version available
+          return new Response('Offline - no cached version available');
         });
       })
   );
