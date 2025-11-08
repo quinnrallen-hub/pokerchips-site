@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0J9PC4FRSB"></script>
     <script>
@@ -33,7 +37,12 @@
     <meta name="twitter:image" content="https://livepokerchips.com/favicon.svg">
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#ffd166">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Poker Tracker">
 
     <!-- Structured Data (JSON-LD) for Search Engines -->
     <script type="application/ld+json">
@@ -59,6 +68,8 @@
     <header role="banner">
         <h1>Live Poker Tracker</h1>
         <nav role="navigation">
+            <a href="guide.html" style="color:var(--primary);text-decoration:none;font-size:14px;margin-right:12px">How to Play</a>
+            <a href="blog.html" style="color:var(--primary);text-decoration:none;font-size:14px;margin-right:12px">Strategy Blog</a>
             <a href="connect.html" style="color:var(--primary);text-decoration:none;font-size:14px">Multiplayer →</a>
         </nav>
     </header>
@@ -570,6 +581,17 @@
         render();
     </script>
 
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+
     <!-- SEO Content Section -->
     <footer style="margin-top:40px;padding:30px 20px;background:rgba(20,32,42,0.6);border-radius:12px;max-width:900px;margin-left:auto;margin-right:auto">
         <article>
@@ -611,6 +633,50 @@
             <p style="color:var(--text-muted);margin-top:20px;font-size:14px;text-align:center">
                 Free poker tracker • No registration required • Works on any device • Perfect for Texas Hold'em
             </p>
+
+            <section style="margin-top:40px;padding-top:40px;border-top:1px solid var(--border)">
+                <h2 style="color:var(--primary);margin-bottom:24px;font-size:24px;text-align:center">Frequently Asked Questions</h2>
+
+                <div style="margin-bottom:20px">
+                    <h3 style="color:var(--text);font-size:18px;margin-bottom:8px">Is Live Poker Tracker really free?</h3>
+                    <p style="color:var(--text-muted);line-height:1.6">Yes! Live Poker Tracker is 100% free with no hidden costs, subscriptions, or premium features. We built this tool for the poker community to enjoy home games without worrying about chip counting.</p>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <h3 style="color:var(--text);font-size:18px;margin-bottom:8px">Do I need to download or install anything?</h3>
+                    <p style="color:var(--text-muted);line-height:1.6">No downloads required! Live Poker Tracker runs entirely in your web browser. Just visit the website and start playing. It works on desktop, tablet, and mobile devices.</p>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <h3 style="color:var(--text);font-size:18px;margin-bottom:8px">How does multiplayer mode work?</h3>
+                    <p style="color:var(--text-muted);line-height:1.6">Multiplayer mode uses peer-to-peer connections, meaning your devices connect directly to each other without our servers storing any game data. One player hosts a game and shares a room code with others. All devices sync in real-time as the game progresses.</p>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <h3 style="color:var(--text);font-size:18px;margin-bottom:8px">Can I use this for cash games or just tournaments?</h3>
+                    <p style="color:var(--text-muted);line-height:1.6">Live Poker Tracker works perfectly for both cash games and tournaments! For cash games, track chip stacks and pots. For tournaments, use the automatic blinds feature and configure increasing blind levels manually as needed.</p>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <h3 style="color:var(--text);font-size:18px;margin-bottom:8px">Does it work offline?</h3>
+                    <p style="color:var(--text-muted);line-height:1.6">Single-player mode works offline once the page has loaded. Multiplayer mode requires an internet connection for devices to sync with each other.</p>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <h3 style="color:var(--text);font-size:18px;margin-bottom:8px">How many players can join a game?</h3>
+                    <p style="color:var(--text-muted);line-height:1.6">You can track up to 10 players at a poker table, which matches the maximum for most Texas Hold'em games. For larger tournaments with multiple tables, you can run separate instances of the tracker on different devices.</p>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <h3 style="color:var(--text);font-size:18px;margin-bottom:8px">What poker variants does this support?</h3>
+                    <p style="color:var(--text-muted);line-height:1.6">Live Poker Tracker is optimized for Texas Hold'em, the most popular poker variant. It tracks blinds, chip stacks, pots, and community cards. While you can use it for other variants, features like digital cards display are designed specifically for Hold'em.</p>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <h3 style="color:var(--text);font-size:18px;margin-bottom:8px">Is my game data saved or stored anywhere?</h3>
+                    <p style="color:var(--text-muted);line-height:1.6">No. All game data exists only in your browser's memory while you're playing. We don't store any information on our servers. When you close the browser or reset the game, all data is permanently deleted.</p>
+                </div>
+            </section>
         </article>
     </footer>
 </body>
