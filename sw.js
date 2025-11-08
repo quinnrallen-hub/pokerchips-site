@@ -6,6 +6,7 @@ const urlsToCache = [
   '/multiplayer.html',
   '/guide.html',
   '/blog.html',
+  '/about.html',
   '/styles.css',
   '/favicon.svg'
 ];
