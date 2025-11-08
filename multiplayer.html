@@ -606,7 +606,13 @@
 
             document.getElementById('connectionStatus').textContent='Creating room...';
             peer=new Peer('poker-'+roomCode,{
-                debug:2
+                debug: 3,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' }
+                    ]
+                }
             });
 
             const hostTimeout=setTimeout(()=>{
@@ -663,7 +669,13 @@
 
             document.getElementById('connectionStatus').textContent='Initializing...';
             peer=new Peer({
-                debug:2
+                debug: 3,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' }
+                    ]
+                }
             });
             peer.on('open',id=>{
                 console.log('Client peer ready:',id);
