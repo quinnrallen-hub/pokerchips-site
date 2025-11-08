@@ -35,10 +35,11 @@ The multiplayer architecture requires **peer connections to be created in multip
 
 - Library: PeerJS 1.5.2 via `<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>`
 - **Do NOT use `defer` attribute** on the PeerJS script tag (causes "Peer is not defined" errors)
-- Server: `0.peerjs.com` (explicitly configured with host/port/path)
+- Server: Uses PeerJS default cloud server (DO NOT manually configure `0.peerjs.com` - it's unreliable)
 - Room IDs: Prefixed with `'poker-'` (e.g., `'poker-ABC123'`)
 - Connection options: `{reliable: true}` for data channels
 - Debug mode: `debug: 2` is enabled for console logging
+- **Important:** Use `new Peer('id', {debug: 2})` instead of manually specifying host/port/path
 
 ### State Synchronization
 
@@ -104,6 +105,11 @@ state = {
 - Host timeout: 10 seconds
 - Client timeout: 15 seconds with 2-second delay before connection attempt
 
+### "Failed to connect to PeerJS server" Error
+- Cause: Manually configured PeerJS server (`0.peerjs.com`) is down or unreliable
+- Fix: Use default PeerJS cloud server by removing manual host/port/path config
+- Use `new Peer('id', {debug: 2})` instead of specifying server details
+
 ### State Not Syncing Between Devices
 - Verify data listener is set up BEFORE sending join message in client
 - Ensure host broadcasts state after adding new player
@@ -115,6 +121,26 @@ GitHub Pages automatically deploys from `main` branch:
 - Custom domain: livepokerchips.com (configured in CNAME file)
 - HTTPS enforced
 - Changes pushed to main branch deploy automatically
+- Typical deployment time: 1-2 minutes
+
+## Content & SEO Structure
+
+### Content Pages (Non-Application)
+- **about.html** - Features, FAQs, technical details (3000+ words)
+- **guide.html** - Complete Texas Hold'em rules tutorial (3000+ words)
+- **blog.html** - Poker strategy articles (2000+ words)
+
+### SEO Files
+- **sitemap.xml** - All 6 pages indexed (ISO 8601 date format required)
+- **robots.txt** - Allows all crawlers, points to sitemap
+- **manifest.json** - PWA configuration for mobile install
+- **sw.js** - Service worker for offline caching
+
+### Important SEO Considerations
+- All pages have unique meta descriptions and titles
+- JSON-LD structured data on homepage only
+- Canonical URLs prevent duplicate content issues
+- Keep content pages updated monthly for SEO freshness
 
 ## File Loading Order
 
@@ -131,3 +157,29 @@ PeerJS must load before inline scripts execute. Current structure:
     </script>
 </body>
 ```
+
+## Development Workflow
+
+### Making Changes
+1. Edit HTML/CSS directly (no build step required)
+2. Test locally by opening HTML files in browser
+3. For multiplayer testing, must use actual domain (WebRTC requires HTTPS)
+4. Push to `main` branch to deploy
+
+### Testing Multiplayer Locally
+WebRTC P2P connections require HTTPS. Options:
+- Use GitHub Pages deployment for testing
+- Or use `ngrok` to tunnel localhost over HTTPS
+- Cannot test P2P connections on `file://` protocol
+
+### Updating Service Worker
+When changing cached files, increment `CACHE_NAME` in `sw.js`:
+```javascript
+const CACHE_NAME = 'poker-tracker-v2'; // Increment version
+```
+
+## Reference Documents
+
+- **SEO_OPTIMIZATION_REPORT.md** - Complete SEO strategy and implementation
+- **PROMOTION_GUIDE.md** - Marketing templates and launch strategy
+- **DAILY_CHECKLIST.md** - Day-by-day tracking for SEO progress

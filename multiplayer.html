@@ -606,10 +606,6 @@
 
             document.getElementById('connectionStatus').textContent='Creating room...';
             peer=new Peer('poker-'+roomCode,{
-                host:'0.peerjs.com',
-                port:443,
-                path:'/',
-                secure:true,
                 debug:2
             });
 
@@ -667,10 +663,6 @@
 
             document.getElementById('connectionStatus').textContent='Initializing...';
             peer=new Peer({
-                host:'0.peerjs.com',
-                port:443,
-                path:'/',
-                secure:true,
                 debug:2
             });
             peer.on('open',id=>{
