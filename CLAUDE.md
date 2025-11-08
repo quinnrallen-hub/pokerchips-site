@@ -35,11 +35,12 @@ The multiplayer architecture requires **peer connections to be created in multip
 
 - Library: PeerJS 1.5.2 via `<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>`
 - **Do NOT use `defer` attribute** on the PeerJS script tag (causes "Peer is not defined" errors)
-- Server: Uses PeerJS default cloud server (DO NOT manually configure `0.peerjs.com` - it's unreliable)
+- Server: Self-hosted on Render.com at `pokerchips-site.onrender.com/poker`
 - Room IDs: Prefixed with `'poker-'` (e.g., `'poker-ABC123'`)
 - Connection options: `{reliable: true}` for data channels
 - Debug mode: `debug: 2` is enabled for console logging
-- **Important:** Use `new Peer('id', {debug: 2})` instead of manually specifying host/port/path
+- STUN servers: Google and Twilio for NAT traversal
+- **Important:** Always use the self-hosted server config to avoid public server outages
 
 ### State Synchronization
 
