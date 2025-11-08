@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Sitemap: https://livepokerchips.com/sitemap.xml
+
+# Allow search engines to crawl all pages
+Allow: /index.html
+Allow: /connect.html
+Allow: /multiplayer.html
+Allow: /styles.css
+Allow: /favicon.svg
