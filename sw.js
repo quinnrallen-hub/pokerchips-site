@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poker-tracker-v2';
+const CACHE_NAME = 'poker-tracker-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,7 +8,10 @@ const urlsToCache = [
   '/blog.html',
   '/about.html',
   '/styles.css',
-  '/favicon.svg'
+  '/favicon.svg',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png'
 ];
 
 // Install event - cache resources
