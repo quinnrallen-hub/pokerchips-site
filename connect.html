@@ -87,7 +87,10 @@
 
         document.getElementById('hostGame').onclick=()=>{
             const name=prompt('Enter your player name:');
-            if(!name?.trim())return alert('Player name is required!');
+            const trimmedName=name?.trim();
+            if(!trimmedName||trimmedName.length>20||!/^[a-zA-Z0-9\s-_]+$/.test(trimmedName)){
+                return alert('Please enter a valid name (max 20 chars, letters/numbers/spaces/-/_ only)');
+            }
             const roomCode=Math.random().toString(36).substring(2,8).toUpperCase();
 
             sessionStorage.setItem('pokerRole','host');
@@ -98,9 +101,14 @@
 
         document.getElementById('joinGame').onclick=()=>{
             const code=document.getElementById('joinCode').value.trim().toUpperCase();
-            if(!code)return alert('Please enter a room code');
+            if(!code||code.length!==6||!/^[A-Z0-9]{6}$/.test(code)){
+                return alert('Please enter a valid 6-character room code');
+            }
             const name=prompt('Enter your player name:');
-            if(!name?.trim())return alert('Player name is required!');
+            const trimmedName=name?.trim();
+            if(!trimmedName||trimmedName.length>20||!/^[a-zA-Z0-9\s-_]+$/.test(trimmedName)){
+                return alert('Please enter a valid name (max 20 chars, letters/numbers/spaces/-/_ only)');
+            }
 
             sessionStorage.setItem('pokerRole','client');
             sessionStorage.setItem('pokerRoomCode',code);

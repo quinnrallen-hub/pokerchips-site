@@ -236,8 +236,11 @@
                         // Clear previous timeout to prevent memory leaks
                         if(animationTimeout) clearTimeout(animationTimeout);
                         animationTimeout=setTimeout(()=>{
-                            const newCards=els.communityCardsDisplay.querySelectorAll('.new-card');
-                            newCards.forEach(card=>card.classList.remove('new-card'));
+                            // Check if elements still exist before querying
+                            if(els.communityCardsDisplay){
+                                const newCards=els.communityCardsDisplay.querySelectorAll('.new-card');
+                                newCards.forEach(card=>card.classList.remove('new-card'));
+                            }
                         },CONFIG.CARD_ANIMATION_CLEANUP_DELAY);
                     }
                 }else{
@@ -261,9 +264,9 @@
                     else if(isBB)position=' (BB)';
                     return`<div class="player${i===state.currentPlayerIndex&&state.roundActive?' active':''}${p.folded?' folded':''}" data-player-index="${i}">
                         <div class="player-name">Seat ${i+1}: ${p.name}${position}</div>
-                        <div class="player-info">Stack: ${p.stack}</div>
-                        <div class="player-info">Bet: ${p.bet}</div>
-                        ${p.folded?'<div class="player-info">FOLDED</div>':''}
+                        <div class="player-info player-stack">Stack: ${p.stack}</div>
+                        <div class="player-info player-bet">Bet: ${p.bet}</div>
+                        ${p.folded?'<div class="player-info player-folded">FOLDED</div>':''}
                     </div>`
                 }).join('');
             }else{
@@ -287,9 +290,9 @@
                         playerEl.classList.remove('folded');
                     }
 
-                    // Update stack and bet text
-                    const stackEl=playerEl.querySelector('.player-info:nth-child(2)');
-                    const betEl=playerEl.querySelector('.player-info:nth-child(3)');
+                    // Update stack and bet text using specific classes
+                    const stackEl=playerEl.querySelector('.player-stack');
+                    const betEl=playerEl.querySelector('.player-bet');
                     if(stackEl)stackEl.textContent=`Stack: ${p.stack}`;
                     if(betEl)betEl.textContent=`Bet: ${p.bet}`;
                 });
@@ -322,6 +325,13 @@
             const cardsToAdd={flop:3,turn:1,river:1};
             state.street=streets[state.street]||'showdown';
             if(!state.deck.length)state.deck=shuffleDeck(createDeck());
+
+            // Validate enough cards for burn + deal
+            const totalNeeded=(cardsToAdd[state.street]||0)+1; // +1 for burn card
+            if(cardsToAdd[state.street]&&state.deck.length<totalNeeded){
+                console.error('Not enough cards in deck');
+                return;
+            }
 
             // Burn a card before dealing (Texas Hold'em rule)
             if(cardsToAdd[state.street]&&state.deck.length)state.deck.pop();
@@ -511,6 +521,12 @@
                 state.currentPlayerIndex=(state.currentPlayerIndex+1)%state.players.length;
                 attempts++;
             }while(state.players[state.currentPlayerIndex].folded&&attempts<state.players.length);
+
+            // Validate we found an active player
+            if(state.players[state.currentPlayerIndex].folded){
+                console.error('No active players found');
+                return;
+            }
 
             // Check if betting round is complete after moving to next player
             if(isBettingRoundComplete()){
