@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/23477236/README.md)
 # Live Poker Tracker
 
 A free, open-source Progressive Web App (PWA) for managing Texas Hold'em poker games. Track chips, manage blinds, and play with friends using real-time multiplayer synchronization.
