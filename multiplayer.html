@@ -41,6 +41,24 @@
         </div>
     </header>
 
+    <div id="noSessionMessage" style="display:none;text-align:center;padding:60px 20px;max-width:600px;margin:0 auto">
+        <div style="background:var(--bg-card);backdrop-filter:blur(10px);padding:48px;border-radius:16px;border:1px solid var(--border);box-shadow:0 16px 48px rgba(0,0,0,0.6)">
+            <h2 style="color:var(--primary);margin:0 0 24px 0;font-size:32px">Join a Multiplayer Game</h2>
+            <p style="color:var(--text-muted);margin:0 0 32px 0;font-size:18px;line-height:1.6">Play poker online with friends in real-time using peer-to-peer connections. No registration required!</p>
+            <div style="margin-bottom:32px;text-align:left">
+                <h3 style="color:var(--text);margin:0 0 16px 0;font-size:20px">Features:</h3>
+                <ul style="color:var(--text-muted);line-height:2;font-size:16px">
+                    <li>Real-time synchronized chip tracking</li>
+                    <li>Peer-to-peer connections (no server required)</li>
+                    <li>Digital card display and betting controls</li>
+                    <li>Auto-post blinds and dealer button management</li>
+                    <li>Support for 2-10 players</li>
+                </ul>
+            </div>
+            <a href="connect.html" style="display:inline-block;padding:16px 32px;background:var(--primary);color:var(--bg);text-decoration:none;border-radius:8px;font-weight:600;font-size:18px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 12px rgba(255,209,102,0.3)" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(255,209,102,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(255,209,102,0.3)'">Get Started →</a>
+        </div>
+    </div>
+
     <div id="gameArea">
         <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -170,11 +188,17 @@
         const storedRoom=sessionStorage.getItem('pokerRoomCode');
         const storedName=sessionStorage.getItem('pokerPlayerName');
 
-        if(!storedRole||!storedRoom||!storedName){
-            window.location.href='connect.html';
-        }
-
         const $=(id)=>document.getElementById(id);
+
+        // Show landing page if no session data, otherwise show game
+        if(!storedRole||!storedRoom||!storedName){
+            $('noSessionMessage').style.display='block';
+            $('gameArea').style.display='none';
+            document.querySelector('header').style.display='none';
+        }else{
+            $('noSessionMessage').style.display='none';
+            $('gameArea').style.display='block';
+        }
         const els={
             playerName:$('playerName'),playerStack:$('playerStack'),pot:$('pot'),currentBet:$('currentBet'),
             currentPlayerName:$('currentPlayerName'),streetName:$('streetName'),players:$('players'),
@@ -183,7 +207,9 @@
             smallBlind:$('smallBlind'),bigBlind:$('bigBlind'),blindsControls:$('blindsControls')
         };
 
-        document.getElementById('roomInfo').textContent=`Room: ${storedRoom} | ${storedName}`;
+        if(storedRoom&&storedName){
+            document.getElementById('roomInfo').textContent=`Room: ${storedRoom} | ${storedName}`;
+        }
 
         const animateNumber=(el,newValue)=>{
             const oldValue=parseInt(el.textContent)||0;
@@ -754,33 +780,36 @@
             },CONFIG.SYNC_DEBOUNCE);
         };
 
-        $('addPlayer').onclick=addPlayer;
-        $('startRound').onclick=startRound;
-        $('moveButton').onclick=moveButton;
-        $('reset').onclick=resetTable;
-        $('betBtn').onclick=bet;
-        $('raiseBtn').onclick=raise;
-        $('callBtn').onclick=call;
-        $('checkBtn').onclick=check;
-        $('foldBtn').onclick=fold;
-        $('nextBtn').onclick=nextPlayer;
-        $('advanceRoundBtn').onclick=advanceRound;
-        $('emptyPotBtn').onclick=openEmptyPotModal;
-        $('confirmEmptyPot').onclick=awardPotToPlayer;
-        $('cancelEmptyPot').onclick=closeEmptyPotModal;
-        els.emptyPotModal.onclick=e=>{if(e.target===els.emptyPotModal)closeEmptyPotModal()};
-        els.playerName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addPlayer()}});
-        $('showDigitalCards').addEventListener('change',e=>{showDigitalCards=e.target.checked;render()});
-        $('enableBlinds').addEventListener('change',e=>els.blindsControls.classList.toggle('hidden',!e.target.checked));
+        // Only initialize game if we have session data
+        if(storedRole&&storedRoom&&storedName){
+            $('addPlayer').onclick=addPlayer;
+            $('startRound').onclick=startRound;
+            $('moveButton').onclick=moveButton;
+            $('reset').onclick=resetTable;
+            $('betBtn').onclick=bet;
+            $('raiseBtn').onclick=raise;
+            $('callBtn').onclick=call;
+            $('checkBtn').onclick=check;
+            $('foldBtn').onclick=fold;
+            $('nextBtn').onclick=nextPlayer;
+            $('advanceRoundBtn').onclick=advanceRound;
+            $('emptyPotBtn').onclick=openEmptyPotModal;
+            $('confirmEmptyPot').onclick=awardPotToPlayer;
+            $('cancelEmptyPot').onclick=closeEmptyPotModal;
+            els.emptyPotModal.onclick=e=>{if(e.target===els.emptyPotModal)closeEmptyPotModal()};
+            els.playerName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addPlayer()}});
+            $('showDigitalCards').addEventListener('change',e=>{showDigitalCards=e.target.checked;render()});
+            $('enableBlinds').addEventListener('change',e=>els.blindsControls.classList.toggle('hidden',!e.target.checked));
 
-        // Auto-initialize based on role
-        if(storedRole==='host'){
-            initHost();
-        }else if(storedRole==='client'){
-            joinGame();
+            // Auto-initialize based on role
+            if(storedRole==='host'){
+                initHost();
+            }else if(storedRole==='client'){
+                joinGame();
+            }
+
+            render();
         }
-
-        render();
     </script>
 </body>
 </html>
