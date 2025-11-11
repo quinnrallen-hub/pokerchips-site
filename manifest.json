@@ -4,7 +4,7 @@
   "description": "Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games and tournaments.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a1929",
+  "background_color": "#0a0e17",
   "theme_color": "#ffd166",
   "orientation": "any",
   "icons": [

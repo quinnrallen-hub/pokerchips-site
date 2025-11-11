@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0J9PC4FRSB"></script>
     <script>
@@ -30,7 +34,9 @@
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#ffd166">
 
     <style>
         .blog-container{max-width:900px;margin:0 auto;padding:20px}
@@ -236,5 +242,16 @@
             <a href="index.html" style="display:inline-block;padding:12px 32px;background:var(--primary);color:#000;text-decoration:none;border-radius:8px;font-weight:700">Start Tracking →</a>
         </div>
     </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>

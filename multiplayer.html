@@ -212,20 +212,23 @@
         }
 
         const animateNumber=(el,newValue)=>{
+            if(!el)return;
             const oldValue=parseInt(el.textContent)||0;
             if(oldValue===newValue)return;
             el.classList.add('chip-update');
-            setTimeout(()=>el.classList.remove('chip-update'),CONFIG.ANIMATION_DURATION);
+            setTimeout(()=>{
+                if(el)el.classList.remove('chip-update');
+            },CONFIG.ANIMATION_DURATION);
             if(Math.abs(newValue-oldValue)>CONFIG.ANIMATION_THRESHOLD){
                 let current=oldValue;
                 const step=(newValue-oldValue)/10;
                 const interval=setInterval(()=>{
                     current+=step;
                     if((step>0&&current>=newValue)||(step<0&&current<=newValue)){
-                        el.textContent=newValue;
+                        if(el)el.textContent=newValue;
                         clearInterval(interval);
                     }else{
-                        el.textContent=Math.round(current);
+                        if(el)el.textContent=Math.round(current);
                     }
                 },20);
             }else{
@@ -234,14 +237,15 @@
         };
 
         const render=()=>{
-            // Calculate side pots if there are all-ins
-            const hasAllIns=state.players.some(p=>!p.folded&&p.stack===0&&p.bet>0);
-            if(hasAllIns&&state.pot>0){
-                state.sidePots=calculateSidePots();
-            }
+            try{
+                // Calculate side pots if there are all-ins
+                const hasAllIns=state.players.some(p=>!p.folded&&p.stack===0&&p.bet>0);
+                if(hasAllIns&&state.pot>0){
+                    state.sidePots=calculateSidePots();
+                }
 
-            animateNumber(els.pot,state.pot);
-            animateNumber(els.currentBet,state.currentBet);
+                animateNumber(els.pot,state.pot);
+                animateNumber(els.currentBet,state.currentBet);
             els.streetName.textContent=state.street?state.street.toUpperCase():'—';
             els.currentPlayerName.textContent=state.roundActive&&state.players.length>0&&state.players[state.currentPlayerIndex]?state.players[state.currentPlayerIndex].name:'—';
             const communityCards=document.getElementById('communityCards');
@@ -320,6 +324,9 @@
 
             // Update button states based on turn
             updateActionButtons();
+            }catch(err){
+                console.error('Render error:',err);
+            }
         };
 
         const updateActionButtons=()=>{
@@ -342,19 +349,24 @@
         };
 
         const addPlayer=()=>{
-            const name=els.playerName.value.trim().substring(0,CONFIG.MAX_NAME_LENGTH);
-            const stack=parseInt(els.playerStack.value)||CONFIG.DEFAULT_STACK;
+            try{
+                const name=els.playerName.value.trim().substring(0,CONFIG.MAX_NAME_LENGTH);
+                const stack=parseInt(els.playerStack.value)||CONFIG.DEFAULT_STACK;
 
-            // Validation
-            if(!name)return alert('Please enter a player name');
-            if(!/^[a-zA-Z0-9\s-_]+$/.test(name))return alert('Name can only contain letters, numbers, spaces, - and _');
-            if(state.players.length>=CONFIG.MAX_PLAYERS)return alert(`Maximum ${CONFIG.MAX_PLAYERS} players allowed`);
-            if(stack<=0||isNaN(stack))return alert('Please enter a valid stack amount');
+                // Validation
+                if(!name)return alert('Please enter a player name');
+                if(!/^[a-zA-Z0-9\s-_]+$/.test(name))return alert('Name can only contain letters, numbers, spaces, - and _');
+                if(state.players.length>=CONFIG.MAX_PLAYERS)return alert(`Maximum ${CONFIG.MAX_PLAYERS} players allowed`);
+                if(stack<=0||isNaN(stack))return alert('Please enter a valid stack amount');
 
-            state.players.push({name,stack,bet:0,folded:false,cards:[]});
-            els.playerName.value='';
-            render();
-            syncState();
+                state.players.push({name,stack,bet:0,folded:false,cards:[]});
+                els.playerName.value='';
+                render();
+                syncState();
+            }catch(err){
+                console.error('Error adding player:',err);
+                alert('An error occurred while adding the player');
+            }
         };
 
         const autoAdvanceStreet=()=>{

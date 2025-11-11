@@ -1,8 +1,10 @@
 /* Live Poker Tracker - Shared Styles */
 
 /* Reset & Variables */
-* {
+*, *::before, *::after {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 :root {
@@ -88,6 +90,11 @@ button:disabled {
     transform: none;
 }
 
+button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
 /* Button ripple effect */
 button::after {
     content: '';
@@ -112,10 +119,16 @@ input[type="number"], input[type="text"] {
     border: 1px solid var(--border);
 }
 
-input:focus {
+input:focus, select:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.1);
+}
+
+a:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 input[type="checkbox"] {
