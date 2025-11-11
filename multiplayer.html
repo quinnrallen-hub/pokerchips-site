@@ -154,8 +154,8 @@
         const shuffleDeck=d=>{const a=[...d];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 
         const calculateSidePots=()=>{
-            // Get players who contributed to the pot
-            const playersWithBets=state.players.filter(p=>p.bet>0||!p.folded);
+            // Get players who contributed to the pot and haven't folded
+            const playersWithBets=state.players.filter(p=>p.bet>0&&!p.folded);
             if(playersWithBets.length===0)return[];
 
             // Sort by bet amount
@@ -243,7 +243,7 @@
             animateNumber(els.pot,state.pot);
             animateNumber(els.currentBet,state.currentBet);
             els.streetName.textContent=state.street?state.street.toUpperCase():'—';
-            els.currentPlayerName.textContent=state.roundActive&&state.players.length>0?state.players[state.currentPlayerIndex].name:'—';
+            els.currentPlayerName.textContent=state.roundActive&&state.players.length>0&&state.players[state.currentPlayerIndex]?state.players[state.currentPlayerIndex].name:'—';
             const communityCards=document.getElementById('communityCards');
             if(showDigitalCards){
                 communityCards.style.display='flex';
@@ -769,14 +769,26 @@
 
         const broadcastState=(exclude=null)=>{
             const msg={type:'state',state};
-            connections.forEach(c=>{if(c!==exclude&&c.open)c.send(msg)});
+            connections.forEach(c=>{
+                if(c!==exclude&&c.open){
+                    try{
+                        c.send(msg);
+                    }catch(err){
+                        console.error('Failed to send to peer:',err);
+                    }
+                }
+            });
         };
 
         const syncState=()=>{
             clearTimeout(syncTimeout);
             syncTimeout=setTimeout(()=>{
-                if(isHost)broadcastState();
-                else if(connections[0]?.open)connections[0].send({type:'state',state});
+                try{
+                    if(isHost)broadcastState();
+                    else if(connections[0]?.open)connections[0].send({type:'state',state});
+                }catch(err){
+                    console.error('Failed to sync state:',err);
+                }
             },CONFIG.SYNC_DEBOUNCE);
         };
 

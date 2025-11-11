@@ -223,7 +223,7 @@
             animateNumber(els.pot,state.pot);
             animateNumber(els.currentBet,state.currentBet);
             els.streetName.textContent=state.street?state.street.toUpperCase():'—';
-            els.currentPlayerName.textContent=state.roundActive&&state.players.length>0?state.players[state.currentPlayerIndex].name:'—';
+            els.currentPlayerName.textContent=state.roundActive&&state.players.length>0&&state.players[state.currentPlayerIndex]?state.players[state.currentPlayerIndex].name:'—';
             const communityCards=document.getElementById('communityCards');
             if(showDigitalCards){
                 communityCards.style.display='flex';
