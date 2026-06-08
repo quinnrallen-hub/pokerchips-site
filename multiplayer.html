@@ -1,20 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <!-- Preconnect to external resources -->
     <link rel="preconnect" href="https://www.googletagmanager.com">
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://unpkg.com">
-
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0J9PC4FRSB"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
+        window.dataLayer=window.dataLayer||[];
         function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-0J9PC4FRSB');
+        gtag('js',new Date());
+        gtag('config','G-0J9PC4FRSB');
     </script>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Multiplayer Poker Game Room | Live Poker Tracker</title>
@@ -31,833 +29,597 @@
 </head>
 <body>
     <header>
-        <h1>Live Poker Tracker - Multiplayer</h1>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span id="connectionStatus" style="color:var(--text-muted);font-size:13px">Connecting...</span>
-            <span id="roomInfo" style="color:var(--text-muted);font-size:14px"></span>
-            <a href="connect.html" style="color:var(--primary);text-decoration:none;font-size:14px">Change Room</a>
-            <a href="index.html" style="color:var(--primary);text-decoration:none;font-size:14px">Single Device</a>
-            <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener" style="display:inline-block;padding:4px 10px;background:rgba(255,209,102,0.15);color:#ffd166;text-decoration:none;border-radius:4px;font-weight:500;font-size:13px;border:1px solid rgba(255,209,102,0.3);transition:all 0.2s" onmouseover="this.style.background='rgba(255,209,102,0.25)';this.style.borderColor='rgba(255,209,102,0.5)'" onmouseout="this.style.background='rgba(255,209,102,0.15)';this.style.borderColor='rgba(255,209,102,0.3)'">☕</a>
+        <h1>Live Poker — Multiplayer</h1>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span id="connectionStatus" class="connection-status">Connecting…</span>
+            <span id="roomInfo"></span>
+            <a href="connect.html" style="color:var(--muted);text-decoration:none;font-size:13px">Change Room</a>
+            <a href="index.html" style="color:var(--muted);text-decoration:none;font-size:13px">Single Device</a>
+            <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener"
+               style="color:var(--primary);font-size:13px;text-decoration:none">☕</a>
         </div>
     </header>
 
-    <div id="noSessionMessage" style="display:none;text-align:center;padding:60px 20px;max-width:600px;margin:0 auto">
-        <div style="background:var(--bg-card);backdrop-filter:blur(10px);padding:48px;border-radius:16px;border:1px solid var(--border);box-shadow:0 16px 48px rgba(0,0,0,0.6)">
-            <h2 style="color:var(--primary);margin:0 0 24px 0;font-size:32px">Join a Multiplayer Game</h2>
-            <p style="color:var(--text-muted);margin:0 0 32px 0;font-size:18px;line-height:1.6">Play poker online with friends in real-time using peer-to-peer connections. No registration required!</p>
-            <div style="margin-bottom:32px;text-align:left">
-                <h3 style="color:var(--text);margin:0 0 16px 0;font-size:20px">Features:</h3>
-                <ul style="color:var(--text-muted);line-height:2;font-size:16px">
-                    <li>Real-time synchronized chip tracking</li>
-                    <li>Peer-to-peer connections (no server required)</li>
-                    <li>Digital card display and betting controls</li>
-                    <li>Auto-post blinds and dealer button management</li>
-                    <li>Support for 2-10 players</li>
-                </ul>
-            </div>
-            <a href="connect.html" style="display:inline-block;padding:16px 32px;background:var(--primary);color:var(--bg);text-decoration:none;border-radius:8px;font-weight:600;font-size:18px;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 12px rgba(255,209,102,0.3)" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(255,209,102,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(255,209,102,0.3)'">Get Started →</a>
+    <!-- Pot display -->
+    <div id="potArea">
+        <div id="potChip">
+            <div id="pot">0</div>
+            <div class="pot-label">POT</div>
+        </div>
+        <div id="gameStatus">
+            <span id="streetName">—</span>
+            <span class="status-dot">·</span>
+            <span>Bet: <strong id="currentBet">0</strong></span>
         </div>
     </div>
 
-    <div id="gameArea">
-        <div class="section" style="margin-bottom:12px;padding:8px;background:rgba(20,32,42,0.8);justify-content:space-between;flex-wrap:wrap">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                <input type="checkbox" id="showDigitalCards" checked>
-                <span>Digital Cards</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+    <!-- Whose turn -->
+    <div id="toActBanner">
+        <span id="currentPlayerName"></span>'s turn
+    </div>
+
+    <!-- Players -->
+    <div id="players"></div>
+
+    <!-- Setup -->
+    <div id="setup">
+        <div class="setup-row">
+            <input id="playerName" placeholder="Player name" autocomplete="off" aria-label="Player name">
+            <input id="playerStack" placeholder="Stack" type="number" value="1000" style="width:90px" aria-label="Starting stack">
+            <button id="addPlayer">Add</button>
+        </div>
+        <div class="setup-row">
+            <label class="toggle-label">
                 <input type="checkbox" id="enableBlinds">
-                <span>Auto-Post Blinds</span>
+                <span>Blinds</span>
             </label>
+            <div id="blindsControls" class="hidden">
+                <input id="smallBlind" type="number" value="5" style="width:58px" aria-label="Small blind">
+                <span style="color:var(--muted)">/</span>
+                <input id="bigBlind" type="number" value="10" style="width:58px" aria-label="Big blind">
+                <button id="moveButton">Move BTN</button>
+            </div>
+            <button id="startRound" class="btn-start">Start Round</button>
+            <button id="reset">Reset</button>
         </div>
-
-        <div id="blindsControls" class="section">
-            <input id="smallBlind" placeholder="Small blind" type="number" value="5" style="width:110px" aria-label="Small blind amount">
-            <input id="bigBlind" placeholder="Big blind" type="number" value="10" style="width:110px" aria-label="Big blind amount">
-            <button id="moveButton" aria-label="Move dealer button">Move Button</button>
-        </div>
-
-        <section id="controls" class="section">
-            <input id="playerName" placeholder="Player name" aria-label="Player name">
-            <input id="playerStack" placeholder="Stack (chips)" type="number" value="1000" aria-label="Starting chip stack">
-            <button id="addPlayer">Add player</button>
-            <button id="startRound">Start Round</button>
-            <button id="reset">Reset Table</button>
-        </section>
-
-        <section id="table">
-        <div id="info">
-            <div>Pot: <span id="pot">0</span></div>
-            <div>Current bet: <span id="currentBet">0</span></div>
-            <div>Street: <span id="streetName">—</span></div>
-            <div>To act: <span id="currentPlayerName">—</span></div>
-        </div>
-
-        <div id="communityCards">
-            <span>Board:</span>
-            <span id="communityCardsDisplay">—</span>
-        </div>
-
-        <div id="players"></div>
-
-        <div id="actions" class="section">
-            <input id="amount" type="number" min="0" value="10" aria-label="Bet amount">
-            <button id="betBtn">Bet</button>
-            <button id="raiseBtn">Raise</button>
-            <button id="callBtn">Call</button>
-            <button id="checkBtn">Check</button>
-            <button id="foldBtn">Fold</button>
-            <button id="nextBtn">Next Player</button>
-            <button id="advanceRoundBtn">Next Street</button>
-            <button id="emptyPotBtn">Empty Pot</button>
-        </div>
-    </section>
     </div>
 
+    <!-- Sticky action bar -->
+    <div id="actionBar">
+        <div id="amountRow">
+            <button id="amountDown" class="amt-btn" aria-label="Decrease amount">−</button>
+            <input id="amount" type="number" min="0" value="10" aria-label="Bet amount">
+            <button id="amountUp" class="amt-btn" aria-label="Increase amount">+</button>
+            <button class="preset" data-preset="min">Min</button>
+            <button class="preset" data-preset="half">½ Pot</button>
+            <button class="preset" data-preset="pot">Pot</button>
+            <button class="preset" data-preset="allin">All In</button>
+        </div>
+        <div id="primaryActions">
+            <button id="foldBtn"  class="action-btn btn-fold">Fold</button>
+            <button id="checkBtn" class="action-btn btn-check">Check</button>
+            <button id="callBtn"  class="action-btn btn-call">Call</button>
+            <button id="betBtn"   class="action-btn btn-bet">Bet</button>
+            <button id="raiseBtn" class="action-btn btn-raise">Raise</button>
+        </div>
+        <div id="adminActions">
+            <button id="nextBtn">Skip Turn</button>
+            <button id="advanceRoundBtn">Next Street</button>
+            <button id="emptyPotBtn">Award Pot 🏆</button>
+        </div>
+    </div>
+
+    <!-- Award pot modal -->
     <div id="emptyPotModal" class="modal">
         <div class="modal-content">
-            <h2>Award Pot to Player</h2>
-            <div style="margin-bottom:20px;padding:12px;background:rgba(255,209,102,0.1);border-radius:8px;border:1px solid rgba(255,209,102,0.3)">
-                <span style="color:var(--text-muted);font-size:14px">Pot Amount:</span>
-                <span style="color:var(--primary);font-size:20px;font-weight:700;margin-left:8px" id="modalPotAmount">0</span>
+            <h2>Award Pot</h2>
+            <div class="pot-preview">
+                <span class="muted">Pot:</span>
+                <span id="modalPotAmount" class="pot-amount">0</span>
             </div>
-            <label>Select Winner:</label>
-            <select id="winnerSelect">
-                <option value="">Choose a player...</option>
-            </select>
+            <label>Winner</label>
+            <select id="winnerSelect"><option value="">Choose a player…</option></select>
             <div class="modal-buttons">
                 <button id="cancelEmptyPot">Cancel</button>
-                <button id="confirmEmptyPot" style="background:rgba(52,211,153,0.2);border-color:rgba(52,211,153,0.5)">Award Chips</button>
+                <button id="confirmEmptyPot" class="btn-award">Award 🏆</button>
             </div>
         </div>
     </div>
+
+    <style>
+        .connection-status {
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+        }
+    </style>
 
     <script>
         'use strict';
 
-        // Configuration Constants
         const CONFIG = {
-            DEFAULT_STACK: 1000,
-            DEFAULT_SB: 5,
-            DEFAULT_BB: 10,
-            MIN_PLAYERS: 2,
-            MAX_PLAYERS: 10,
-            MAX_NAME_LENGTH: 20,
-            ANIMATION_THRESHOLD: 100,
-            ANIMATION_DURATION: 300,
-            CARD_ANIMATION_CLEANUP_DELAY: 500,
+            DEFAULT_STACK: 1000, DEFAULT_SB: 5, DEFAULT_BB: 10,
+            MIN_PLAYERS: 2, MAX_PLAYERS: 10, MAX_NAME_LENGTH: 20,
+            ANIMATION_THRESHOLD: 100, ANIMATION_DURATION: 300,
             SYNC_DEBOUNCE: 50
         };
 
-        const suits=['♠','♥','♦','♣'],ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-        const createDeck=()=>suits.flatMap(s=>ranks.map(r=>({rank:r,suit:s})));
-        const shuffleDeck=d=>{const a=[...d];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-
-        const calculateSidePots=()=>{
-            // Get players who contributed to the pot and haven't folded
-            const playersWithBets=state.players.filter(p=>p.bet>0&&!p.folded);
-            if(playersWithBets.length===0)return[];
-
-            // Sort by bet amount
-            const sorted=[...playersWithBets].sort((a,b)=>a.bet-b.bet);
-            const pots=[];
-            let previousLevel=0;
-
-            for(let i=0;i<sorted.length;i++){
-                const currentLevel=sorted[i].bet;
-                if(currentLevel<=previousLevel)continue;
-
-                const potAmount=(currentLevel-previousLevel)*sorted.slice(i).length;
-                if(potAmount>0){
-                    pots.push({
-                        amount:potAmount,
-                        eligiblePlayers:sorted.slice(i).map(p=>p.name)
-                    });
-                }
-                previousLevel=currentLevel;
-            }
-            return pots;
+        let state = {
+            players: [], pot: 0, sidePots: [], currentBet: 0, currentPlayerIndex: 0,
+            roundActive: false, street: 'preflop', roundCount: 0,
+            buttonPosition: 0, lastAggressor: -1, minRaise: 0, actionCount: 0
         };
 
-        let state={players:[],pot:0,sidePots:[],currentBet:0,currentPlayerIndex:0,roundActive:false,deck:[],communityCards:[],street:'preflop',roundCount:0,buttonPosition:0,lastAggressor:-1,minRaise:0};
-        let peer=null,connections=[],isHost=false,roomCode=null,myNickname=null,mySeatNumber=null,hasJoined=false;
-        let syncTimeout=null,showDigitalCards=true,previousCardCount=0,previousCurrentPlayer=-1,actionCount=0,animationTimeout=null;
+        let peer = null, connections = [], isHost = false, roomCode = null,
+            myNickname = null, hasJoined = false;
+        let syncTimeout = null;
 
-        // Check if coming from connect page
-        const storedRole=sessionStorage.getItem('pokerRole');
-        const storedRoom=sessionStorage.getItem('pokerRoomCode');
-        const storedName=sessionStorage.getItem('pokerPlayerName');
+        const storedRole = sessionStorage.getItem('pokerRole');
+        const storedRoom = sessionStorage.getItem('pokerRoomCode');
+        const storedName = sessionStorage.getItem('pokerPlayerName');
 
-        const $=(id)=>document.getElementById(id);
+        if (!storedRole || !storedRoom || !storedName) window.location.href = 'connect.html';
 
-        // Show landing page if no session data, otherwise show game
-        if(!storedRole||!storedRoom||!storedName){
-            $('noSessionMessage').style.display='block';
-            $('gameArea').style.display='none';
-            document.querySelector('header').style.display='none';
-        }else{
-            $('noSessionMessage').style.display='none';
-            $('gameArea').style.display='block';
-        }
-        const els={
-            playerName:$('playerName'),playerStack:$('playerStack'),pot:$('pot'),currentBet:$('currentBet'),
-            currentPlayerName:$('currentPlayerName'),streetName:$('streetName'),players:$('players'),
-            communityCardsDisplay:$('communityCardsDisplay'),amount:$('amount'),
-            emptyPotModal:$('emptyPotModal'),winnerSelect:$('winnerSelect'),modalPotAmount:$('modalPotAmount'),
-            smallBlind:$('smallBlind'),bigBlind:$('bigBlind'),blindsControls:$('blindsControls')
+        const $ = id => document.getElementById(id);
+        const els = {
+            playerName: $('playerName'), playerStack: $('playerStack'),
+            pot: $('pot'), currentBet: $('currentBet'),
+            currentPlayerName: $('currentPlayerName'), streetName: $('streetName'),
+            players: $('players'), amount: $('amount'),
+            emptyPotModal: $('emptyPotModal'), winnerSelect: $('winnerSelect'),
+            modalPotAmount: $('modalPotAmount'),
+            smallBlind: $('smallBlind'), bigBlind: $('bigBlind'),
+            blindsControls: $('blindsControls')
         };
 
-        if(storedRoom&&storedName){
-            document.getElementById('roomInfo').textContent=`Room: ${storedRoom} | ${storedName}`;
-        }
+        $('roomInfo').textContent = `${storedRoom} · ${storedName}`;
+        // Apply roomInfo styling
+        $('roomInfo').className = 'room-info';
 
-        const animateNumber=(el,newValue)=>{
-            if(!el)return;
-            const oldValue=parseInt(el.textContent)||0;
-            if(oldValue===newValue)return;
+        const animateNumber = (el, newValue) => {
+            const oldValue = parseInt(el.textContent) || 0;
+            if (oldValue === newValue) return;
             el.classList.add('chip-update');
-            setTimeout(()=>{
-                if(el)el.classList.remove('chip-update');
-            },CONFIG.ANIMATION_DURATION);
-            if(Math.abs(newValue-oldValue)>CONFIG.ANIMATION_THRESHOLD){
-                let current=oldValue;
-                const step=(newValue-oldValue)/10;
-                const interval=setInterval(()=>{
-                    current+=step;
-                    if((step>0&&current>=newValue)||(step<0&&current<=newValue)){
-                        if(el)el.textContent=newValue;
-                        clearInterval(interval);
-                    }else{
-                        if(el)el.textContent=Math.round(current);
+            setTimeout(() => el.classList.remove('chip-update'), CONFIG.ANIMATION_DURATION);
+            if (Math.abs(newValue - oldValue) > CONFIG.ANIMATION_THRESHOLD) {
+                let current = oldValue;
+                const step = (newValue - oldValue) / 10;
+                const interval = setInterval(() => {
+                    current += step;
+                    if ((step > 0 && current >= newValue) || (step < 0 && current <= newValue)) {
+                        el.textContent = newValue; clearInterval(interval);
+                    } else {
+                        el.textContent = Math.round(current);
                     }
-                },20);
-            }else{
-                el.textContent=newValue;
+                }, 20);
+            } else {
+                el.textContent = newValue;
             }
         };
 
-        const render=()=>{
-            try{
-                // Calculate side pots if there are all-ins
-                const hasAllIns=state.players.some(p=>!p.folded&&p.stack===0&&p.bet>0);
-                if(hasAllIns&&state.pot>0){
-                    state.sidePots=calculateSidePots();
-                }
+        const render = () => {
+            animateNumber(els.pot, state.pot);
+            animateNumber(els.currentBet, state.currentBet);
+            els.streetName.textContent = state.street ? state.street.toUpperCase() : '—';
 
-                animateNumber(els.pot,state.pot);
-                animateNumber(els.currentBet,state.currentBet);
-            els.streetName.textContent=state.street?state.street.toUpperCase():'—';
-            els.currentPlayerName.textContent=state.roundActive&&state.players.length>0&&state.players[state.currentPlayerIndex]?state.players[state.currentPlayerIndex].name:'—';
-            const communityCards=document.getElementById('communityCards');
-            if(showDigitalCards){
-                communityCards.style.display='flex';
-                if(state.communityCards?.length>0){
-                    const currentCardCount=state.communityCards.length;
-                    const hasNewCards=currentCardCount>previousCardCount;
-                    els.communityCardsDisplay.innerHTML=state.communityCards.map((c,i)=>createCardElement(c,hasNewCards&&i>=previousCardCount)).join('');
-                    if(hasNewCards){
-                        previousCardCount=currentCardCount;
-                        if(animationTimeout) clearTimeout(animationTimeout);
-                        animationTimeout=setTimeout(()=>{
-                            // Check if elements still exist before querying
-                            if(els.communityCardsDisplay){
-                                const newCards=els.communityCardsDisplay.querySelectorAll('.new-card');
-                                newCards.forEach(card=>card.classList.remove('new-card'));
-                            }
-                        },CONFIG.CARD_ANIMATION_CLEANUP_DELAY);
-                    }
-                }else{
-                    els.communityCardsDisplay.textContent='—';
-                    previousCardCount=0;
-                }
-            }else{
-                communityCards.style.display='none';
+            const curP = state.roundActive && state.players.length > 0
+                ? state.players[state.currentPlayerIndex] : null;
+
+            const banner = $('toActBanner');
+            banner.style.display = curP ? 'flex' : 'none';
+            if (curP) els.currentPlayerName.textContent = curP.name;
+
+            if (curP) {
+                const toCall = Math.min(state.currentBet - curP.bet, curP.stack);
+                $('callBtn').textContent = toCall > 0 ? `Call ${toCall}` : 'Call';
             }
 
-            // Only re-render all players if player count changed or it's a full refresh
-            const playerCountChanged=els.players.children.length!==state.players.length;
-            if(playerCountChanged){
-                els.players.innerHTML=state.players.map((p,i)=>{
-                    const isButton=i===state.buttonPosition;
-                    const isSB=i===(state.buttonPosition+1)%state.players.length;
-                    const isBB=i===(state.buttonPosition+2)%state.players.length;
-                    let position='';
-                    if(isButton)position=' (BTN)';
-                    else if(isSB)position=' (SB)';
-                    else if(isBB)position=' (BB)';
-                    return`<div class="player${i===state.currentPlayerIndex&&state.roundActive?' active':''}${p.folded?' folded':''}" data-player-index="${i}">
-                        <div class="player-name">Seat ${i+1}: ${p.name}${position}</div>
-                        <div class="player-info player-stack">Stack: ${p.stack}</div>
-                        <div class="player-info player-bet">Bet: ${p.bet}</div>
-                        ${p.folded?'<div class="player-info player-folded">FOLDED</div>':''}
-                    </div>`
-                }).join('');
-            }else{
-                // Update only changed players
-                state.players.forEach((p,i)=>{
-                    const playerEl=els.players.children[i];
-                    if(!playerEl)return;
+            // Player tiles
+            const n = state.players.length;
+            els.players.innerHTML = state.players.map((p, i) => {
+                const isActive = i === state.currentPlayerIndex && state.roundActive;
+                const isBtn = n >= 2 && i === state.buttonPosition;
+                const isSB  = n >= 3 && i === (state.buttonPosition + 1) % n;
+                const isBB  = n >= 2 && i === (state.buttonPosition + (n === 2 ? 1 : 2)) % n;
+                const isMe  = p.name === myNickname;
+                const badges = [
+                    isBtn ? '<span class="badge badge-btn">BTN</span>' : '',
+                    isSB  ? '<span class="badge badge-sb">SB</span>'  : '',
+                    isBB  ? '<span class="badge badge-bb">BB</span>'  : '',
+                    isMe  ? '<span class="badge badge-me">YOU</span>' : ''
+                ].join('');
+                const sub = p.folded ? 'FOLDED' : (p.bet > 0 ? `bet: ${p.bet}` : '');
+                return `<div class="player${isActive ? ' active' : ''}${p.folded ? ' folded' : ''}">
+                    <div class="player-top">
+                        <span class="player-name">${p.name}</span>
+                        <span class="player-badges">${badges}</span>
+                    </div>
+                    <div class="player-stack">${p.stack.toLocaleString()}</div>
+                    <div class="player-sub">${sub}</div>
+                </div>`;
+            }).join('');
 
-                    // Update active class
-                    const shouldBeActive=i===state.currentPlayerIndex&&state.roundActive;
-                    if(shouldBeActive&&!playerEl.classList.contains('active')){
-                        playerEl.classList.add('active');
-                    }else if(!shouldBeActive&&playerEl.classList.contains('active')){
-                        playerEl.classList.remove('active');
-                    }
-
-                    // Update folded class
-                    if(p.folded&&!playerEl.classList.contains('folded')){
-                        playerEl.classList.add('folded');
-                    }else if(!p.folded&&playerEl.classList.contains('folded')){
-                        playerEl.classList.remove('folded');
-                    }
-
-                    // Update stack and bet text using specific classes
-                    const stackEl=playerEl.querySelector('.player-stack');
-                    const betEl=playerEl.querySelector('.player-bet');
-                    if(stackEl)stackEl.textContent=`Stack: ${p.stack}`;
-                    if(betEl)betEl.textContent=`Bet: ${p.bet}`;
-                });
-            }
-            previousCurrentPlayer=state.currentPlayerIndex;
-
-            // Update button states based on turn
-            updateActionButtons();
-            }catch(err){
-                console.error('Render error:',err);
-            }
+            // Action bar — contextual visibility + turn lock
+            const on = state.roundActive;
+            const hasBet = state.currentBet > 0;
+            const isMyTurn = on && curP?.name === myNickname;
+            $('amountRow').style.display      = on ? 'flex' : 'none';
+            $('primaryActions').style.display = on ? 'flex' : 'none';
+            $('foldBtn').style.display        = on && hasBet  ? '' : 'none';
+            $('callBtn').style.display        = on && hasBet  ? '' : 'none';
+            $('raiseBtn').style.display       = on && hasBet  ? '' : 'none';
+            $('checkBtn').style.display       = on && !hasBet ? '' : 'none';
+            $('betBtn').style.display         = on && !hasBet ? '' : 'none';
+            [$('foldBtn'), $('callBtn'), $('raiseBtn'), $('checkBtn'), $('betBtn')]
+                .forEach(b => { if (b.style.display !== 'none') b.disabled = !isMyTurn; });
         };
 
-        const updateActionButtons=()=>{
-            // Check if it's my turn
-            const isMyTurn=state.roundActive&&
-                           state.players.length>0&&
-                           state.players[state.currentPlayerIndex]?.name===myNickname;
-
-            // Disable/enable action buttons based on turn
-            $('betBtn').disabled=!isMyTurn;
-            $('raiseBtn').disabled=!isMyTurn;
-            $('callBtn').disabled=!isMyTurn;
-            $('checkBtn').disabled=!isMyTurn;
-            $('foldBtn').disabled=!isMyTurn;
+        const addPlayer = () => {
+            const name = els.playerName.value.trim().substring(0, CONFIG.MAX_NAME_LENGTH);
+            const stack = parseInt(els.playerStack.value) || CONFIG.DEFAULT_STACK;
+            if (!name) return alert('Please enter a player name');
+            if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) return alert('Name can only contain letters, numbers, spaces, - and _');
+            if (state.players.length >= CONFIG.MAX_PLAYERS) return alert(`Maximum ${CONFIG.MAX_PLAYERS} players`);
+            if (stack <= 0 || isNaN(stack)) return alert('Please enter a valid stack amount');
+            state.players.push({ name, stack, bet: 0, folded: false });
+            els.playerName.value = '';
+            render(); syncState();
         };
 
-        const createCardElement=(c,isNew)=>{
-            const isRed=c.suit==='♥'||c.suit==='♦';
-            return`<div class="card ${isRed?'red':'black'}${isNew?' new-card':''}"><div class="card-rank">${c.rank}</div><div class="card-suit">${c.suit}</div><div class="card-rank-bottom">${c.rank}</div></div>`;
-        };
-
-        const addPlayer=()=>{
-            try{
-                const name=els.playerName.value.trim().substring(0,CONFIG.MAX_NAME_LENGTH);
-                const stack=parseInt(els.playerStack.value)||CONFIG.DEFAULT_STACK;
-
-                // Validation
-                if(!name)return alert('Please enter a player name');
-                if(!/^[a-zA-Z0-9\s-_]+$/.test(name))return alert('Name can only contain letters, numbers, spaces, - and _');
-                if(state.players.length>=CONFIG.MAX_PLAYERS)return alert(`Maximum ${CONFIG.MAX_PLAYERS} players allowed`);
-                if(stack<=0||isNaN(stack))return alert('Please enter a valid stack amount');
-
-                state.players.push({name,stack,bet:0,folded:false,cards:[]});
-                els.playerName.value='';
-                render();
-                syncState();
-            }catch(err){
-                console.error('Error adding player:',err);
-                alert('An error occurred while adding the player');
-            }
-        };
-
-        const autoAdvanceStreet=()=>{
-            const streets={preflop:'flop',flop:'turn',turn:'river',river:'showdown'};
-            const cardsToAdd={flop:3,turn:1,river:1};
-            state.street=streets[state.street]||'showdown';
-            if(!state.deck.length)state.deck=shuffleDeck(createDeck());
-
-            // Validate enough cards for burn + deal
-            const totalNeeded=(cardsToAdd[state.street]||0)+1; // +1 for burn card
-            if(cardsToAdd[state.street]&&state.deck.length<totalNeeded){
-                console.error('Not enough cards in deck');
-                return;
-            }
-
-            // Burn a card before dealing (Texas Hold'em rule)
-            if(cardsToAdd[state.street]&&state.deck.length)state.deck.pop();
-
-            // Deal community cards
-            for(let i=0;i<(cardsToAdd[state.street]||0);i++)if(state.deck.length)state.communityCards.push(state.deck.pop());
+        const autoAdvanceStreet = () => {
+            const streets = { preflop: 'flop', flop: 'turn', turn: 'river', river: 'showdown' };
+            state.street = streets[state.street] || 'showdown';
             render();
-            syncState();
         };
 
-        const isBettingRoundComplete=()=>{
-            const active=state.players.filter(p=>!p.folded);
-            if(active.length<=1)return true;
-
-            // All active players must have equal bets (or be all-in)
-            const allBetsEqual=active.every(p=>p.bet===state.currentBet||p.stack===0);
-            if(!allBetsEqual)return false;
-
-            // Everyone must have had a chance to act
-            const activePlayers=state.players.filter(p=>!p.folded).length;
-            return actionCount>=activePlayers;
+        const isBettingRoundComplete = () => {
+            const active = state.players.filter(p => !p.folded);
+            if (active.length <= 1) return true;
+            const allBetsEqual = active.every(p => p.bet === state.currentBet || p.stack === 0);
+            if (!allBetsEqual) return false;
+            return state.actionCount >= active.length;
         };
 
-        const advanceRound=()=>{
-            if(!isBettingRoundComplete())return alert('All players must match the current bet first!');
-            state.sidePots=[]; // Clear side pots at end of betting round
-            state.players.forEach(p=>p.bet=0);
-            state.currentBet=0;
-            state.minRaise=0;
-            state.lastAggressor=-1;
-            actionCount=0;
-
-            // Action starts from button+1 on post-flop streets
-            state.currentPlayerIndex=(state.buttonPosition+1)%state.players.length;
-
-            // Skip folded players
-            let attempts=0;
-            while(state.players[state.currentPlayerIndex].folded&&attempts<state.players.length){
-                state.currentPlayerIndex=(state.currentPlayerIndex+1)%state.players.length;
+        const advanceRound = () => {
+            if (!isBettingRoundComplete()) return alert('All players must match the current bet first!');
+            state.sidePots = [];
+            state.players.forEach(p => p.bet = 0);
+            state.currentBet = 0; state.minRaise = 0; state.lastAggressor = -1; state.actionCount = 0;
+            state.currentPlayerIndex = (state.buttonPosition + 1) % state.players.length;
+            let attempts = 0;
+            while (state.players[state.currentPlayerIndex].folded && attempts < state.players.length) {
+                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
                 attempts++;
             }
-
             state.roundCount++;
             autoAdvanceStreet();
+            syncState();
         };
 
-        const startRound=()=>{
-            if(state.players.length<CONFIG.MIN_PLAYERS)return alert(`Need at least ${CONFIG.MIN_PLAYERS} players`);
-            state.roundActive=true;
-            state.street='preflop';
-            state.roundCount=0;
-            state.deck=shuffleDeck(createDeck());
-            state.communityCards=[];
-            previousCardCount=0;
-            actionCount=0;
-            state.lastAggressor=-1;
-            state.players.forEach(p=>{p.bet=0;p.folded=false;p.cards=p.cards||[]});
-
-            const isHeadsUp=state.players.length===2;
-
-            // Post blinds if enabled
-            const blindsEnabled=$('enableBlinds').checked;
-            if(blindsEnabled){
-                const sb=parseInt(els.smallBlind.value)||CONFIG.DEFAULT_SB;
-                const bb=parseInt(els.bigBlind.value)||CONFIG.DEFAULT_BB;
-
-                // Heads-up: Button posts SB, other player posts BB
-                const sbPos=isHeadsUp?state.buttonPosition:(state.buttonPosition+1)%state.players.length;
-                const bbPos=isHeadsUp?(state.buttonPosition+1)%state.players.length:(state.buttonPosition+2)%state.players.length;
-                const sbPlayer=state.players[sbPos];
-                const bbPlayer=state.players[bbPos];
-
-                // Small blind
-                const sbAmount=Math.min(sb,sbPlayer.stack);
-                sbPlayer.stack-=sbAmount;
-                sbPlayer.bet=sbAmount;
-                state.pot+=sbAmount;
-
-                // Big blind
-                const bbAmount=Math.min(bb,bbPlayer.stack);
-                bbPlayer.stack-=bbAmount;
-                bbPlayer.bet=bbAmount;
-                state.pot+=bbAmount;
-
-                state.currentBet=bb;
-                state.minRaise=bb;
-
-                // Heads-up: Button (SB) acts first preflop
-                // 3+ players: UTG (button+3) acts first preflop
-                state.currentPlayerIndex=isHeadsUp?state.buttonPosition:(state.buttonPosition+3)%state.players.length;
-            }else{
-                state.currentBet=0;
-                state.minRaise=0;
-                state.currentPlayerIndex=state.buttonPosition;
+        const startRound = () => {
+            if (state.players.length < CONFIG.MIN_PLAYERS) return alert(`Need at least ${CONFIG.MIN_PLAYERS} players`);
+            state.roundActive = true; state.pot = 0; state.street = 'preflop';
+            state.roundCount = 0; state.actionCount = 0; state.lastAggressor = -1;
+            state.sidePots = [];
+            state.players.forEach(p => { p.bet = 0; p.folded = false; });
+            const isHeadsUp = state.players.length === 2;
+            const blindsOn = $('enableBlinds').checked;
+            if (blindsOn) {
+                const sb = parseInt(els.smallBlind.value) || CONFIG.DEFAULT_SB;
+                const bb = parseInt(els.bigBlind.value) || CONFIG.DEFAULT_BB;
+                const n = state.players.length;
+                const sbPos = isHeadsUp ? state.buttonPosition : (state.buttonPosition + 1) % n;
+                const bbPos = isHeadsUp ? (state.buttonPosition + 1) % n : (state.buttonPosition + 2) % n;
+                const sbP = state.players[sbPos], bbP = state.players[bbPos];
+                const sbAmt = Math.min(sb, sbP.stack);
+                sbP.stack -= sbAmt; sbP.bet = sbAmt; state.pot += sbAmt;
+                const bbAmt = Math.min(bb, bbP.stack);
+                bbP.stack -= bbAmt; bbP.bet = bbAmt; state.pot += bbAmt;
+                state.currentBet = bb; state.minRaise = bb;
+                state.currentPlayerIndex = isHeadsUp ? state.buttonPosition : (state.buttonPosition + 3) % n;
+            } else {
+                state.currentBet = 0; state.minRaise = 0;
+                state.currentPlayerIndex = state.buttonPosition;
             }
-
-            render();
-            syncState();
+            render(); syncState();
         };
 
-        const bet=()=>{
-            if(!state.roundActive)return;
-            const amount=parseInt(els.amount.value);
-            if(isNaN(amount)||amount<=0)return alert('Please enter a valid bet amount');
-            const p=state.players[state.currentPlayerIndex];
-
-            // Can't bet if there's already a bet
-            if(state.currentBet>0)return alert('There is already a bet. Use Raise instead.');
-
-            if(amount>p.stack)return alert('Not enough chips');
-            p.stack-=amount;
-            p.bet+=amount;
-            state.pot+=amount;
-            state.currentBet=p.bet;
-            state.minRaise=amount;
-            state.lastAggressor=state.currentPlayerIndex;
-            actionCount=0;
+        const bet = () => {
+            if (!state.roundActive) return;
+            const amount = parseInt(els.amount.value);
+            if (isNaN(amount) || amount <= 0) return alert('Please enter a valid bet amount');
+            const p = state.players[state.currentPlayerIndex];
+            if (state.currentBet > 0) return alert('There is already a bet — use Raise instead');
+            if (amount > p.stack) return alert('Not enough chips');
+            p.stack -= amount; p.bet += amount; state.pot += amount;
+            state.currentBet = p.bet; state.minRaise = amount;
+            state.lastAggressor = state.currentPlayerIndex; state.actionCount = 0;
             nextPlayer();
-            syncState();
         };
 
-        const raise=()=>{
-            if(!state.roundActive)return;
-            const raiseAmount=parseInt(els.amount.value);
-            if(isNaN(raiseAmount)||raiseAmount<=0)return alert('Please enter a valid raise amount');
-
-            // Enforce minimum raise rule
-            if(state.minRaise>0&&raiseAmount<state.minRaise){
-                return alert(`Minimum raise is ${state.minRaise}. You must raise by at least ${state.minRaise}.`);
-            }
-
-            const p=state.players[state.currentPlayerIndex];
-            const toCall=state.currentBet-p.bet;
-            const needed=toCall+raiseAmount;
-
-            if(needed>p.stack)return alert('Not enough chips');
-
-            p.stack-=needed;
-            p.bet+=needed;
-            state.pot+=needed;
-
-            const previousBet=state.currentBet;
-            state.currentBet=p.bet;
-            state.minRaise=p.bet-previousBet;
-            state.lastAggressor=state.currentPlayerIndex;
-            actionCount=0;
+        const raise = () => {
+            if (!state.roundActive) return;
+            const raiseAmount = parseInt(els.amount.value);
+            if (isNaN(raiseAmount) || raiseAmount <= 0) return alert('Please enter a valid raise amount');
+            if (state.minRaise > 0 && raiseAmount < state.minRaise)
+                return alert(`Minimum raise is ${state.minRaise}`);
+            const p = state.players[state.currentPlayerIndex];
+            const toCall = state.currentBet - p.bet;
+            const needed = toCall + raiseAmount;
+            if (needed > p.stack) return alert('Not enough chips');
+            p.stack -= needed; p.bet += needed; state.pot += needed;
+            const prev = state.currentBet;
+            state.currentBet = p.bet; state.minRaise = p.bet - prev;
+            state.lastAggressor = state.currentPlayerIndex; state.actionCount = 0;
             nextPlayer();
-            syncState();
         };
 
-        const call=()=>{
-            if(!state.roundActive)return;
-            const p=state.players[state.currentPlayerIndex];
-            const toCall=Math.min(state.currentBet-p.bet,p.stack);
-            p.stack-=toCall;
-            p.bet+=toCall;
-            state.pot+=toCall;
-            actionCount++;
-            nextPlayer();
-            syncState();
+        const call = () => {
+            if (!state.roundActive) return;
+            const p = state.players[state.currentPlayerIndex];
+            const toCall = Math.min(state.currentBet - p.bet, p.stack);
+            p.stack -= toCall; p.bet += toCall; state.pot += toCall;
+            state.actionCount++; nextPlayer();
         };
 
-        const check=()=>{
-            if(!state.roundActive)return;
-            if(state.players[state.currentPlayerIndex].bet<state.currentBet)return alert('Cannot check, must call or fold');
-            actionCount++;
-            nextPlayer();
-            syncState();
+        const check = () => {
+            if (!state.roundActive) return;
+            if (state.players[state.currentPlayerIndex].bet < state.currentBet)
+                return alert('Cannot check — must call or fold');
+            state.actionCount++; nextPlayer();
         };
 
-        const fold=()=>{
-            if(!state.roundActive)return;
-            state.players[state.currentPlayerIndex].folded=true;
-            actionCount++;
-            nextPlayer();
-            syncState();
+        const fold = () => {
+            if (!state.roundActive) return;
+            state.players[state.currentPlayerIndex].folded = true;
+            state.actionCount++; nextPlayer();
         };
 
-        const nextPlayer=()=>{
-            // Check if only one player remains unfolded
-            const activePlayers=state.players.filter(p=>!p.folded);
-            if(activePlayers.length===1&&state.roundActive){
-                const winner=activePlayers[0];
-                const potAmount=state.pot;
-                winner.stack+=potAmount;
-                setTimeout(()=>{
-                    alert(`${winner.name} wins ${potAmount} chips! (All others folded)`);
-                    resetTable();
-                },100);
+        const nextPlayer = () => {
+            const active = state.players.filter(p => !p.folded);
+            if (active.length === 1 && state.roundActive) {
+                const winner = active[0]; const pot = state.pot;
+                winner.stack += pot;
+                setTimeout(() => { alert(`${winner.name} wins ${pot} chips!`); resetTable(); }, 100);
                 return;
             }
-
-            let attempts=0;
-            do{
-                state.currentPlayerIndex=(state.currentPlayerIndex+1)%state.players.length;
+            let attempts = 0;
+            do {
+                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
                 attempts++;
-            }while(state.players[state.currentPlayerIndex].folded&&attempts<state.players.length);
-
-            // Validate we found an active player
-            if(state.players[state.currentPlayerIndex].folded){
-                console.error('No active players found');
-                return;
-            }
-
-            // Check if betting round is complete after moving to next player
-            if(isBettingRoundComplete()){
+            } while (state.players[state.currentPlayerIndex].folded && attempts < state.players.length);
+            if (isBettingRoundComplete()) {
                 advanceRound();
-            }else{
+            } else {
                 render();
+                syncState();
             }
         };
 
-        const moveButton=()=>{
-            if(state.players.length<2)return;
-            state.buttonPosition=(state.buttonPosition+1)%state.players.length;
-            render();
-            syncState();
+        const moveButton = () => {
+            if (state.players.length < 2) return;
+            state.buttonPosition = (state.buttonPosition + 1) % state.players.length;
+            render(); syncState();
         };
 
-        const resetTable=()=>{
-            state.pot=0;
-            state.sidePots=[];
-            state.currentBet=0;
-            state.currentPlayerIndex=0;
-            state.roundActive=false;
-            state.deck=[];
-            state.communityCards=[];
-            state.street='preflop';
-            state.roundCount=0;
-            state.players.forEach(p=>{p.bet=0;p.folded=false});
-            previousCardCount=0;
-            render();
-            syncState();
+        const resetTable = () => {
+            state.pot = 0; state.sidePots = []; state.currentBet = 0;
+            state.currentPlayerIndex = 0; state.roundActive = false;
+            state.street = 'preflop'; state.roundCount = 0;
+            state.players.forEach(p => { p.bet = 0; p.folded = false; });
+            render(); syncState();
         };
 
-        const openEmptyPotModal=()=>{
-            if(state.pot===0)return alert('The pot is already empty!');
-            if(!state.players.length)return alert('No players at the table!');
-            els.modalPotAmount.textContent=state.pot;
-            els.winnerSelect.innerHTML='<option value="">Choose a player...</option>'+state.players.map((p,i)=>`<option value="${i}">${p.name} (Stack: ${p.stack})</option>`).join('');
+        const openEmptyPotModal = () => {
+            if (state.pot === 0) return alert('The pot is already empty!');
+            if (!state.players.length) return alert('No players at the table!');
+            els.modalPotAmount.textContent = state.pot;
+            els.winnerSelect.innerHTML = '<option value="">Choose a player…</option>' +
+                state.players.map((p, i) => `<option value="${i}">${p.name} (${p.stack.toLocaleString()})</option>`).join('');
             els.emptyPotModal.classList.add('active');
         };
 
-        const closeEmptyPotModal=()=>{
+        const closeEmptyPotModal = () => {
             els.emptyPotModal.classList.remove('active');
-            els.winnerSelect.value='';
+            els.winnerSelect.value = '';
         };
 
-        const awardPotToPlayer=()=>{
-            const idx=els.winnerSelect.value;
-            if(idx==='')return alert('Please select a player!');
-            const winner=state.players[parseInt(idx)];
-            const amt=state.pot;
-
-            // Animate pot collection
-            const potEl=els.pot;
-            potEl.style.animation='potCollect .5s ease-out';
-            setTimeout(()=>{
-                winner.stack+=amt;
-                state.pot=0;
-                state.players.forEach(p=>p.bet=0);
-                state.currentBet=0;
-                closeEmptyPotModal();
-                potEl.style.animation='';
-                render();
-                syncState();
-                alert(`${winner.name} wins ${amt} chips!`);
-            },500);
+        const awardPotToPlayer = () => {
+            const idx = els.winnerSelect.value;
+            if (idx === '') return alert('Please select a player!');
+            const winner = state.players[parseInt(idx)]; const amt = state.pot;
+            els.pot.style.animation = 'potCollect .5s ease-out';
+            setTimeout(() => {
+                winner.stack += amt; state.pot = 0;
+                state.players.forEach(p => p.bet = 0); state.currentBet = 0;
+                closeEmptyPotModal(); els.pot.style.animation = '';
+                render(); syncState(); alert(`${winner.name} wins ${amt} chips!`);
+            }, 500);
         };
 
-        const initHost=()=>{
-            isHost=true;
-            hasJoined=true;
-            myNickname=storedName;
-            roomCode=storedRoom;
-            state.players=[{name:myNickname,stack:1000,bet:0,folded:false,cards:[]}];
-            mySeatNumber=0;
-            state.currentPlayerIndex=0;
+        // Networking
+        const broadcastState = (exclude = null) => {
+            const msg = { type: 'state', state };
+            connections.forEach(c => { if (c !== exclude && c.open) c.send(msg); });
+        };
 
-            document.getElementById('connectionStatus').textContent='Creating room...';
-            peer=new Peer('poker-'+roomCode,{
+        const syncState = () => {
+            clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => {
+                if (isHost) broadcastState();
+                else if (connections[0]?.open) connections[0].send({ type: 'state', state });
+            }, CONFIG.SYNC_DEBOUNCE);
+        };
+
+        const setStatus = (text, color = 'var(--muted)') => {
+            const el = $('connectionStatus');
+            el.textContent = text;
+            el.style.color = color;
+            el.style.borderColor = color === 'var(--muted)' ? 'var(--border)' : color;
+        };
+
+        const initHost = () => {
+            isHost = true; hasJoined = true; myNickname = storedName; roomCode = storedRoom;
+            state.players = [{ name: myNickname, stack: 1000, bet: 0, folded: false }];
+            state.currentPlayerIndex = 0;
+            setStatus('Creating room…');
+
+            peer = new Peer('poker-' + roomCode, {
                 debug: 2,
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' },
-                        { urls: 'stun:stun2.l.google.com:19302' }
-                    ]
-                }
+                config: { iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' },
+                    { urls: 'stun:stun2.l.google.com:19302' }
+                ]}
             });
 
-            const hostTimeout=setTimeout(()=>{
-                if(!peer||!peer.open){
-                    document.getElementById('connectionStatus').textContent='Connection failed - try again';
-                    document.getElementById('connectionStatus').style.color='#ef4444';
+            const hostTimeout = setTimeout(() => {
+                if (!peer || !peer.open) {
+                    setStatus('Connection failed', 'var(--red)');
                     alert('Failed to connect to PeerJS server. Please refresh and try again.');
                 }
-            },10000);
+            }, 10000);
 
-            peer.on('open',id=>{
+            peer.on('open', id => {
                 clearTimeout(hostTimeout);
-                console.log('Host ready! Room:',roomCode,'Peer ID:',id);
-                document.getElementById('connectionStatus').textContent='✓ Room Active';
-                document.getElementById('connectionStatus').style.color='#34d399';
+                setStatus('✓ Room Active', 'var(--green)');
+                console.log('Host ready, room:', roomCode);
             });
-            peer.on('connection',conn=>{
-                console.log('New peer connected:',conn.peer);
+
+            peer.on('connection', conn => {
                 connections.push(conn);
-                conn.on('data',data=>{
-                    console.log('Host received:',data.type);
-                    if(data.type==='state'){
-                        state=data.state;
+                conn.on('data', data => {
+                    if (data.type === 'state') {
+                        const senderIsCurrentPlayer = !state.roundActive ||
+                            !conn.playerName ||
+                            conn.playerName === state.players[state.currentPlayerIndex]?.name;
+                        if (senderIsCurrentPlayer) {
+                            state = data.state;
+                            render();
+                            broadcastState(conn);
+                        }
+                    } else if (data.type === 'join') {
+                        conn.playerName = data.playerName;
+                        state.players.push({ name: data.playerName, stack: 1000, bet: 0, folded: false });
                         render();
-                        broadcastState(conn);
-                    }else if(data.type==='join'){
-                        console.log('Player joined:',data.playerName);
-                        state.players.push({name:data.playerName,stack:1000,bet:0,folded:false,cards:[]});
-                        render();
-                        console.log('Sending updated state to all clients');
                         broadcastState();
                     }
                 });
-                conn.on('open',()=>{
-                    console.log('Connection opened with peer');
-                });
-                conn.on('close',()=>{
-                    console.log('Peer disconnected');
-                    connections=connections.filter(c=>c!==conn);
+                conn.on('close', () => {
+                    connections = connections.filter(c => c !== conn);
                 });
             });
-            peer.on('error',err=>{
-                console.error('Host peer error:',err);
-                document.getElementById('connectionStatus').textContent='Error: '+err.type;
-                document.getElementById('connectionStatus').style.color='#ef4444';
+
+            peer.on('error', err => {
+                setStatus('Error: ' + err.type, 'var(--red)');
             });
+
             render();
         };
 
-        const joinGame=()=>{
-            hasJoined=true;
-            myNickname=storedName;
-            roomCode=storedRoom;
+        const joinGame = () => {
+            hasJoined = true; myNickname = storedName; roomCode = storedRoom;
+            setStatus('Connecting…');
 
-            document.getElementById('connectionStatus').textContent='Initializing...';
-            peer=new Peer({
+            peer = new Peer({
                 debug: 2,
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' },
-                        { urls: 'stun:stun2.l.google.com:19302' }
-                    ]
-                }
+                config: { iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' },
+                    { urls: 'stun:stun2.l.google.com:19302' }
+                ]}
             });
-            peer.on('open',id=>{
-                console.log('Client peer ready:',id);
-                document.getElementById('connectionStatus').textContent='Finding room '+roomCode+'...';
-                setTimeout(()=>{
-                    console.log('Attempting to connect to: poker-'+roomCode);
-                    const conn=peer.connect('poker-'+roomCode,{reliable:true});
+
+            peer.on('open', () => {
+                setStatus('Finding room…');
+                setTimeout(() => {
+                    const conn = peer.connect('poker-' + roomCode, { reliable: true });
                     connections.push(conn);
+                    let connected = false;
 
-                    let connected=false;
-                    const timeout=setTimeout(()=>{
-                        if(!connected){
-                            console.error('Connection timeout');
-                            document.getElementById('connectionStatus').textContent='Connection failed';
-                            document.getElementById('connectionStatus').style.color='#ef4444';
-                            alert('Could not connect to room. The host may not be online yet. Wait for the host to open their game first, then try again.');
+                    const timeout = setTimeout(() => {
+                        if (!connected) {
+                            setStatus('Connection failed', 'var(--red)');
+                            alert('Could not connect to room. Make sure the host has opened their game first.');
                         }
-                    },15000);
+                    }, 15000);
 
-                    conn.on('data',data=>{
-                        console.log('Received data:',data.type);
-                        if(data.type==='state'){
-                            console.log('Updating state from host');
-                            state=data.state;
-                            render();
-                        }
+                    conn.on('open', () => {
+                        connected = true; clearTimeout(timeout);
+                        setStatus('✓ Connected', 'var(--green)');
+                        conn.send({ type: 'join', playerName: myNickname });
                     });
-                    conn.on('open',()=>{
-                        connected=true;
-                        clearTimeout(timeout);
-                        console.log('Connected to room successfully!');
-                        document.getElementById('connectionStatus').textContent='✓ Connected';
-                        document.getElementById('connectionStatus').style.color='#34d399';
-                        conn.send({type:'join',playerName:myNickname});
+
+                    conn.on('data', data => {
+                        if (data.type === 'state') { state = data.state; render(); }
                     });
-                    conn.on('close',()=>{
-                        console.log('Disconnected from room');
-                        document.getElementById('connectionStatus').textContent='Disconnected';
-                        document.getElementById('connectionStatus').style.color='#ef4444';
-                        alert('Disconnected from room');
+
+                    conn.on('close', () => {
+                        setStatus('Disconnected', 'var(--red)');
+                        alert('Disconnected from room.');
                     });
-                    conn.on('error',err=>{
-                        connected=true;
-                        clearTimeout(timeout);
-                        console.error('Connection error:',err);
-                        document.getElementById('connectionStatus').textContent='Connection error';
-                        document.getElementById('connectionStatus').style.color='#ef4444';
+
+                    conn.on('error', err => {
+                        connected = true; clearTimeout(timeout);
+                        setStatus('Error', 'var(--red)');
                         alert('Failed to connect to room.');
                     });
-                },2000);
+                }, 2000);
             });
-            peer.on('error',err=>{
-                console.error('Client peer error:',err);
-                document.getElementById('connectionStatus').textContent='Error: '+err.type;
-                document.getElementById('connectionStatus').style.color='#ef4444';
-                if(err.type==='peer-unavailable'){
+
+            peer.on('error', err => {
+                setStatus('Error: ' + err.type, 'var(--red)');
+                if (err.type === 'peer-unavailable')
                     alert('Room not found! Make sure the host opened their game first.');
-                }
             });
         };
 
-        const broadcastState=(exclude=null)=>{
-            const msg={type:'state',state};
-            connections.forEach(c=>{
-                if(c!==exclude&&c.open){
-                    try{
-                        c.send(msg);
-                    }catch(err){
-                        console.error('Failed to send to peer:',err);
-                    }
-                }
-            });
-        };
+        // Amount presets
+        document.querySelectorAll('.preset').forEach(btn => {
+            btn.onclick = () => {
+                const p = state.players[state.currentPlayerIndex];
+                const bb = parseInt(els.bigBlind.value) || CONFIG.DEFAULT_BB;
+                const presets = {
+                    min:   state.minRaise || bb,
+                    half:  Math.max(1, Math.floor(state.pot / 2)),
+                    pot:   state.pot,
+                    allin: p ? p.stack : 0
+                };
+                els.amount.value = Math.max(0, presets[btn.dataset.preset] || 0);
+            };
+        });
 
-        const syncState=()=>{
-            clearTimeout(syncTimeout);
-            syncTimeout=setTimeout(()=>{
-                try{
-                    if(isHost)broadcastState();
-                    else if(connections[0]?.open)connections[0].send({type:'state',state});
-                }catch(err){
-                    console.error('Failed to sync state:',err);
-                }
-            },CONFIG.SYNC_DEBOUNCE);
-        };
+        const amountStep = () => Math.max(1, state.minRaise || parseInt(els.bigBlind.value) || CONFIG.DEFAULT_BB);
+        $('amountDown').onclick = () => els.amount.value = Math.max(0, (parseInt(els.amount.value) || 0) - amountStep());
+        $('amountUp').onclick   = () => els.amount.value = (parseInt(els.amount.value) || 0) + amountStep();
 
-        // Only initialize game if we have session data
-        if(storedRole&&storedRoom&&storedName){
-            $('addPlayer').onclick=addPlayer;
-            $('startRound').onclick=startRound;
-            $('moveButton').onclick=moveButton;
-            $('reset').onclick=resetTable;
-            $('betBtn').onclick=bet;
-            $('raiseBtn').onclick=raise;
-            $('callBtn').onclick=call;
-            $('checkBtn').onclick=check;
-            $('foldBtn').onclick=fold;
-            $('nextBtn').onclick=nextPlayer;
-            $('advanceRoundBtn').onclick=advanceRound;
-            $('emptyPotBtn').onclick=openEmptyPotModal;
-            $('confirmEmptyPot').onclick=awardPotToPlayer;
-            $('cancelEmptyPot').onclick=closeEmptyPotModal;
-            els.emptyPotModal.onclick=e=>{if(e.target===els.emptyPotModal)closeEmptyPotModal()};
-            els.playerName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addPlayer()}});
-            $('showDigitalCards').addEventListener('change',e=>{showDigitalCards=e.target.checked;render()});
-            $('enableBlinds').addEventListener('change',e=>els.blindsControls.classList.toggle('hidden',!e.target.checked));
+        $('addPlayer').onclick       = addPlayer;
+        $('startRound').onclick      = startRound;
+        $('moveButton').onclick      = moveButton;
+        $('reset').onclick           = resetTable;
+        $('betBtn').onclick          = bet;
+        $('raiseBtn').onclick        = raise;
+        $('callBtn').onclick         = call;
+        $('checkBtn').onclick        = check;
+        $('foldBtn').onclick         = fold;
+        $('nextBtn').onclick         = nextPlayer;
+        $('advanceRoundBtn').onclick = advanceRound;
+        $('emptyPotBtn').onclick     = openEmptyPotModal;
+        $('confirmEmptyPot').onclick = awardPotToPlayer;
+        $('cancelEmptyPot').onclick  = closeEmptyPotModal;
+        els.emptyPotModal.onclick    = e => { if (e.target === els.emptyPotModal) closeEmptyPotModal(); };
+        els.playerName.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPlayer(); } });
+        $('enableBlinds').addEventListener('change', e => {
+            els.blindsControls.classList.toggle('hidden', !e.target.checked);
+        });
 
-            // Clean up connections on page unload
-            window.addEventListener('beforeunload',()=>{
-                if(peer){
-                    connections.forEach(c=>c.close());
-                    peer.destroy();
-                }
-            });
+        if (storedRole === 'host') initHost();
+        else if (storedRole === 'client') joinGame();
 
-            // Auto-initialize based on role
-            if(storedRole==='host'){
-                initHost();
-            }else if(storedRole==='client'){
-                joinGame();
-            }
-
-            render();
-        }
+        render();
     </script>
 </body>
 </html>

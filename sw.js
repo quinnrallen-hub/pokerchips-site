@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poker-tracker-v5';
+const CACHE_NAME = 'poker-tracker-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -21,9 +21,6 @@ self.addEventListener('install', event => {
       .then(cache => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
-      })
-      .catch(err => {
-        console.error('Cache installation failed:', err);
       })
   );
   self.skipWaiting();
@@ -59,22 +56,12 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME)
             .then(cache => {
               cache.put(event.request, responseToCache);
-            })
-            .catch(err => {
-              console.error('Failed to cache response:', err);
             });
 
           return response;
-        }).catch(err => {
-          console.error('Fetch failed:', err);
+        }).catch(() => {
           // Network failed, no cached version available
-          return new Response('Offline - no cached version available', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: new Headers({
-              'Content-Type': 'text/plain'
-            })
-          });
+          return new Response('Offline - no cached version available');
         });
       })
   );

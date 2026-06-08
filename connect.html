@@ -65,11 +65,13 @@
         <h1>Live Poker</h1>
         <p>Connect to play with others online</p>
 
+        <input id="playerName" placeholder="Your name" maxlength="20" autocomplete="off">
+        <br>
         <button id="hostGame">Host New Game</button>
 
         <div class="divider">or</div>
 
-        <input id="joinCode" placeholder="Enter Room Code">
+        <input id="joinCode" placeholder="Enter Room Code" autocomplete="off">
         <br>
         <button id="joinGame">Join Game</button>
 
@@ -84,40 +86,37 @@
     <script>
         'use strict';
         const statusEl=document.getElementById('status');
+        const nameEl=document.getElementById('playerName');
 
         document.getElementById('hostGame').onclick=()=>{
-            const name=prompt('Enter your player name:');
-            const trimmedName=name?.trim();
-            if(!trimmedName||trimmedName.length>20||!/^[a-zA-Z0-9\s-_]+$/.test(trimmedName)){
-                return alert('Please enter a valid name (max 20 chars, letters/numbers/spaces/-/_ only)');
-            }
+            const name=nameEl.value.trim();
+            if(!name)return alert('Please enter your name first!');
+            if(!/^[a-zA-Z0-9\s\-_]+$/.test(name))return alert('Name can only contain letters, numbers, spaces, - and _');
             const roomCode=Math.random().toString(36).substring(2,8).toUpperCase();
-
             sessionStorage.setItem('pokerRole','host');
             sessionStorage.setItem('pokerRoomCode',roomCode);
-            sessionStorage.setItem('pokerPlayerName',name.trim());
+            sessionStorage.setItem('pokerPlayerName',name);
             window.location.href='multiplayer.html';
         };
 
         document.getElementById('joinGame').onclick=()=>{
+            const name=nameEl.value.trim();
+            if(!name)return alert('Please enter your name first!');
+            if(!/^[a-zA-Z0-9\s\-_]+$/.test(name))return alert('Name can only contain letters, numbers, spaces, - and _');
             const code=document.getElementById('joinCode').value.trim().toUpperCase();
-            if(!code||code.length!==6||!/^[A-Z0-9]{6}$/.test(code)){
-                return alert('Please enter a valid 6-character room code');
-            }
-            const name=prompt('Enter your player name:');
-            const trimmedName=name?.trim();
-            if(!trimmedName||trimmedName.length>20||!/^[a-zA-Z0-9\s-_]+$/.test(trimmedName)){
-                return alert('Please enter a valid name (max 20 chars, letters/numbers/spaces/-/_ only)');
-            }
-
+            if(!code)return alert('Please enter a room code');
             sessionStorage.setItem('pokerRole','client');
             sessionStorage.setItem('pokerRoomCode',code);
-            sessionStorage.setItem('pokerPlayerName',name.trim());
+            sessionStorage.setItem('pokerPlayerName',name);
             window.location.href='multiplayer.html';
         };
 
         document.getElementById('joinCode').addEventListener('keydown',e=>{
             if(e.key==='Enter'){e.preventDefault();document.getElementById('joinGame').click()}
+        });
+
+        nameEl.addEventListener('keydown',e=>{
+            if(e.key==='Enter'){e.preventDefault();document.getElementById('hostGame').click()}
         });
     </script>
 </body>
