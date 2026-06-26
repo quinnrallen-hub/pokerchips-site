@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poker-tracker-v4';
+const CACHE_NAME = 'poker-tracker-v8';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -19,8 +19,15 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        // Cache each URL independently so one failed fetch (404/network blip)
+        // doesn't abort the whole install and break offline mode.
+        return Promise.all(
+          urlsToCache.map(url =>
+            cache.add(url).catch(err =>
+              console.warn('SW: failed to cache', url, err)
+            )
+          )
+        );
       })
   );
   self.skipWaiting();
@@ -60,7 +67,13 @@ self.addEventListener('fetch', event => {
 
           return response;
         }).catch(() => {
-          // Network failed, no cached version available
+          // Network failed. For page navigations, fall back to the cached
+          // app shell so the PWA still opens offline.
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html').then(page =>
+              page || caches.match('/')
+            );
+          }
           return new Response('Offline - no cached version available');
         });
       })

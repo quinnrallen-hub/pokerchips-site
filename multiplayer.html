@@ -18,23 +18,26 @@
     <title>Multiplayer Poker Game Room | Live Poker Tracker</title>
     <meta name="description" content="Real-time multiplayer poker game with synchronized chip tracking. Play online poker with friends using peer-to-peer connections.">
     <meta name="keywords" content="multiplayer poker game, online poker room, real-time poker, synchronized poker tracker">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="noindex, follow">
     <link rel="canonical" href="https://livepokerchips.com/multiplayer.html">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
-    <meta name="theme-color" content="#ffd166">
+    <meta name="theme-color" content="#0b0b0d">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
-<body>
-    <header>
-        <h1>Live Poker — Multiplayer</h1>
+<body class="app">
+    <header role="banner">
+        <a href="index.html" class="brand">
+            <span class="chip-mark"></span>
+            <span class="wordmark">LIVE<b>POKER</b></span>
+        </a>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span id="connectionStatus" class="connection-status">Connecting…</span>
             <span id="roomInfo"></span>
-            <a href="connect.html" style="color:var(--muted);text-decoration:none;font-size:13px">Change Room</a>
-            <a href="index.html" style="color:var(--muted);text-decoration:none;font-size:13px">Single Device</a>
+            <a href="connect.html" style="color:var(--muted);text-decoration:none;font-size:13px;font-weight:600">Change Room</a>
+            <a href="index.html" style="color:var(--muted);text-decoration:none;font-size:13px;font-weight:600">Single Device</a>
             <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener"
                style="color:var(--primary);font-size:13px;text-decoration:none">☕</a>
         </div>
@@ -109,6 +112,8 @@
         </div>
     </div>
 
+    <div id="toast"></div>
+
     <!-- Award pot modal -->
     <div id="emptyPotModal" class="modal">
         <div class="modal-content">
@@ -128,13 +133,26 @@
 
     <style>
         .connection-status {
-            font-size: 12px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: .5px;
+            padding: 4px 11px; border-radius: 20px;
+            border: 1px solid var(--line2);
+            background: var(--panel); color: var(--muted);
         }
+        #roomInfo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; font-weight: 700; letter-spacing: 1px;
+            color: var(--gold); background: rgba(231,189,92,.1);
+            padding: 4px 11px; border-radius: 8px; border: 1px solid rgba(231,189,92,.2);
+        }
+        #toast { position: fixed; top: 68px; left: 50%; transform: translateX(-50%) translateY(-8px);
+            background: var(--panel2); color: var(--text); padding: 10px 20px; border-radius: 10px;
+            border: 1px solid var(--line); font-size: 14px; font-weight: 600; z-index: 300;
+            opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s;
+            white-space: nowrap; max-width: calc(100vw - 32px); text-align: center; }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.toast-error { border-color: rgba(236,106,106,.4); color: var(--red); }
+        #toast.toast-win   { border-color: rgba(231,189,92,.4);  color: var(--gold); }
     </style>
 
     <script>
@@ -149,8 +167,9 @@
 
         let state = {
             players: [], pot: 0, sidePots: [], currentBet: 0, currentPlayerIndex: 0,
-            roundActive: false, street: 'preflop', roundCount: 0,
-            buttonPosition: 0, lastAggressor: -1, minRaise: 0, actionCount: 0
+            roundActive: false, street: 'preflop',
+            buttonPosition: 0, minRaise: 0,
+            toAct: []
         };
 
         let peer = null, connections = [], isHost = false, roomCode = null,
@@ -176,8 +195,16 @@
         };
 
         $('roomInfo').textContent = `${storedRoom} · ${storedName}`;
-        // Apply roomInfo styling
         $('roomInfo').className = 'room-info';
+
+        let _toastTimer;
+        const toast = (msg, type = '') => {
+            const el = $('toast');
+            el.textContent = msg;
+            el.className = 'show' + (type ? ' toast-' + type : '');
+            clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+        };
 
         const animateNumber = (el, newValue) => {
             const oldValue = parseInt(el.textContent) || 0;
@@ -208,8 +235,9 @@
             const curP = state.roundActive && state.players.length > 0
                 ? state.players[state.currentPlayerIndex] : null;
 
+            const atShowdown = state.street === 'showdown';
             const banner = $('toActBanner');
-            banner.style.display = curP ? 'flex' : 'none';
+            banner.style.display = curP && !atShowdown ? 'flex' : 'none';
             if (curP) els.currentPlayerName.textContent = curP.name;
 
             if (curP) {
@@ -237,33 +265,46 @@
                         <span class="player-name">${p.name}</span>
                         <span class="player-badges">${badges}</span>
                     </div>
-                    <div class="player-stack">${p.stack.toLocaleString()}</div>
+                    <div class="player-stack-row">
+                        <span class="chip-glyph"></span>
+                        <span class="player-stack">${p.stack.toLocaleString()}</span>
+                    </div>
                     <div class="player-sub">${sub}</div>
                 </div>`;
             }).join('');
 
             // Action bar — contextual visibility + turn lock
-            const on = state.roundActive;
+            const on = state.roundActive && !atShowdown;
             const hasBet = state.currentBet > 0;
+            const alreadyIn = curP ? curP.bet >= state.currentBet : false;
             const isMyTurn = on && curP?.name === myNickname;
             $('amountRow').style.display      = on ? 'flex' : 'none';
             $('primaryActions').style.display = on ? 'flex' : 'none';
-            $('foldBtn').style.display        = on && hasBet  ? '' : 'none';
-            $('callBtn').style.display        = on && hasBet  ? '' : 'none';
-            $('raiseBtn').style.display       = on && hasBet  ? '' : 'none';
-            $('checkBtn').style.display       = on && !hasBet ? '' : 'none';
-            $('betBtn').style.display         = on && !hasBet ? '' : 'none';
+            $('foldBtn').style.display  = on && hasBet && !alreadyIn ? '' : 'none';
+            $('callBtn').style.display  = on && hasBet && !alreadyIn ? '' : 'none';
+            $('raiseBtn').style.display = on && hasBet              ? '' : 'none';
+            $('checkBtn').style.display = on && (!hasBet || alreadyIn) ? '' : 'none';
+            $('betBtn').style.display   = on && !hasBet             ? '' : 'none';
             [$('foldBtn'), $('callBtn'), $('raiseBtn'), $('checkBtn'), $('betBtn')]
                 .forEach(b => { if (b.style.display !== 'none') b.disabled = !isMyTurn; });
+        };
+
+        const activePlayers = () => state.players.filter(p => !p.folded);
+
+        const rebuildToAct = (excludeIdx = -1) => {
+            state.toAct = state.players
+                .map((p, i) => ({ p, i }))
+                .filter(({ p, i }) => !p.folded && p.stack > 0 && i !== excludeIdx)
+                .map(({ i }) => i);
         };
 
         const addPlayer = () => {
             const name = els.playerName.value.trim().substring(0, CONFIG.MAX_NAME_LENGTH);
             const stack = parseInt(els.playerStack.value) || CONFIG.DEFAULT_STACK;
-            if (!name) return alert('Please enter a player name');
-            if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) return alert('Name can only contain letters, numbers, spaces, - and _');
-            if (state.players.length >= CONFIG.MAX_PLAYERS) return alert(`Maximum ${CONFIG.MAX_PLAYERS} players`);
-            if (stack <= 0 || isNaN(stack)) return alert('Please enter a valid stack amount');
+            if (!name) return toast('Please enter a player name', 'error');
+            if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) return toast('Name can only contain letters, numbers, spaces, - and _', 'error');
+            if (state.players.length >= CONFIG.MAX_PLAYERS) return toast(`Maximum ${CONFIG.MAX_PLAYERS} players`, 'error');
+            if (stack <= 0 || isNaN(stack)) return toast('Please enter a valid stack amount', 'error');
             state.players.push({ name, stack, bet: 0, folded: false });
             els.playerName.value = '';
             render(); syncState();
@@ -275,42 +316,55 @@
             render();
         };
 
-        const isBettingRoundComplete = () => {
-            const active = state.players.filter(p => !p.folded);
-            if (active.length <= 1) return true;
-            const allBetsEqual = active.every(p => p.bet === state.currentBet || p.stack === 0);
-            if (!allBetsEqual) return false;
-            return state.actionCount >= active.length;
-        };
-
         const advanceRound = () => {
-            if (!isBettingRoundComplete()) return alert('All players must match the current bet first!');
             state.sidePots = [];
             state.players.forEach(p => p.bet = 0);
-            state.currentBet = 0; state.minRaise = 0; state.lastAggressor = -1; state.actionCount = 0;
-            state.currentPlayerIndex = (state.buttonPosition + 1) % state.players.length;
-            let attempts = 0;
-            while (state.players[state.currentPlayerIndex].folded && attempts < state.players.length) {
-                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
-                attempts++;
+            state.currentBet = 0; state.minRaise = 0;
+            const streets = { preflop: 'flop', flop: 'turn', turn: 'river', river: 'showdown' };
+            state.street = streets[state.street] || 'showdown';
+
+            if (state.street === 'showdown') {
+                state.toAct = [];
+                render(); syncState();
+                toast('Showdown — award the pot', 'win');
+                return;
             }
-            state.roundCount++;
-            autoAdvanceStreet();
-            syncState();
+
+            rebuildToAct();
+            if (state.toAct.length === 0) { advanceRound(); return; }
+
+            const n = state.players.length;
+            let idx = (state.buttonPosition + 1) % n;
+            for (let i = 0; i < n; i++) {
+                if (state.toAct.includes(idx)) break;
+                idx = (idx + 1) % n;
+            }
+            state.currentPlayerIndex = idx;
+            render(); syncState();
+        };
+
+        const endRound = () => {
+            state.pot = 0; state.currentBet = 0; state.currentPlayerIndex = 0;
+            state.roundActive = false; state.street = 'preflop';
+            state.minRaise = 0; state.toAct = [];
+            state.players.forEach(p => { p.bet = 0; p.folded = false; });
+            state.buttonPosition = (state.buttonPosition + 1) % Math.max(1, state.players.length);
+            render(); syncState();
         };
 
         const startRound = () => {
-            if (state.players.length < CONFIG.MIN_PLAYERS) return alert(`Need at least ${CONFIG.MIN_PLAYERS} players`);
+            if (state.players.length < CONFIG.MIN_PLAYERS) return toast(`Need at least ${CONFIG.MIN_PLAYERS} players`, 'error');
+            if (state.players.filter(p => p.stack > 0).length < CONFIG.MIN_PLAYERS)
+                return toast('Not enough players with chips', 'error');
             state.roundActive = true; state.pot = 0; state.street = 'preflop';
-            state.roundCount = 0; state.actionCount = 0; state.lastAggressor = -1;
-            state.sidePots = [];
-            state.players.forEach(p => { p.bet = 0; p.folded = false; });
-            const isHeadsUp = state.players.length === 2;
+            state.toAct = []; state.sidePots = [];
+            const n = state.players.length;
+            state.players.forEach(p => { p.bet = 0; p.folded = p.stack === 0; });
+            const isHeadsUp = n === 2;
             const blindsOn = $('enableBlinds').checked;
             if (blindsOn) {
                 const sb = parseInt(els.smallBlind.value) || CONFIG.DEFAULT_SB;
                 const bb = parseInt(els.bigBlind.value) || CONFIG.DEFAULT_BB;
-                const n = state.players.length;
                 const sbPos = isHeadsUp ? state.buttonPosition : (state.buttonPosition + 1) % n;
                 const bbPos = isHeadsUp ? (state.buttonPosition + 1) % n : (state.buttonPosition + 2) % n;
                 const sbP = state.players[sbPos], bbP = state.players[bbPos];
@@ -320,9 +374,15 @@
                 bbP.stack -= bbAmt; bbP.bet = bbAmt; state.pot += bbAmt;
                 state.currentBet = bb; state.minRaise = bb;
                 state.currentPlayerIndex = isHeadsUp ? state.buttonPosition : (state.buttonPosition + 3) % n;
+                state.toAct = state.players.map((p, i) => p.folded ? null : i).filter(i => i !== null);
             } else {
                 state.currentBet = 0; state.minRaise = 0;
                 state.currentPlayerIndex = state.buttonPosition;
+                rebuildToAct();
+            }
+            for (let i = 0; i < n; i++) {
+                if (!state.players[state.currentPlayerIndex].folded) break;
+                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % n;
             }
             render(); syncState();
         };
@@ -330,30 +390,30 @@
         const bet = () => {
             if (!state.roundActive) return;
             const amount = parseInt(els.amount.value);
-            if (isNaN(amount) || amount <= 0) return alert('Please enter a valid bet amount');
+            if (isNaN(amount) || amount <= 0) return toast('Please enter a valid bet amount', 'error');
             const p = state.players[state.currentPlayerIndex];
-            if (state.currentBet > 0) return alert('There is already a bet — use Raise instead');
-            if (amount > p.stack) return alert('Not enough chips');
+            if (state.currentBet > 0) return toast('There is already a bet — use Raise instead', 'error');
+            if (amount > p.stack) return toast('Not enough chips', 'error');
             p.stack -= amount; p.bet += amount; state.pot += amount;
             state.currentBet = p.bet; state.minRaise = amount;
-            state.lastAggressor = state.currentPlayerIndex; state.actionCount = 0;
+            rebuildToAct(state.currentPlayerIndex);
             nextPlayer();
         };
 
         const raise = () => {
             if (!state.roundActive) return;
             const raiseAmount = parseInt(els.amount.value);
-            if (isNaN(raiseAmount) || raiseAmount <= 0) return alert('Please enter a valid raise amount');
+            if (isNaN(raiseAmount) || raiseAmount <= 0) return toast('Please enter a valid raise amount', 'error');
             if (state.minRaise > 0 && raiseAmount < state.minRaise)
-                return alert(`Minimum raise is ${state.minRaise}`);
+                return toast(`Minimum raise is ${state.minRaise}`, 'error');
             const p = state.players[state.currentPlayerIndex];
             const toCall = state.currentBet - p.bet;
             const needed = toCall + raiseAmount;
-            if (needed > p.stack) return alert('Not enough chips');
+            if (needed > p.stack) return toast('Not enough chips', 'error');
             p.stack -= needed; p.bet += needed; state.pot += needed;
             const prev = state.currentBet;
             state.currentBet = p.bet; state.minRaise = p.bet - prev;
-            state.lastAggressor = state.currentPlayerIndex; state.actionCount = 0;
+            rebuildToAct(state.currentPlayerIndex);
             nextPlayer();
         };
 
@@ -362,41 +422,46 @@
             const p = state.players[state.currentPlayerIndex];
             const toCall = Math.min(state.currentBet - p.bet, p.stack);
             p.stack -= toCall; p.bet += toCall; state.pot += toCall;
-            state.actionCount++; nextPlayer();
+            state.toAct = state.toAct.filter(i => i !== state.currentPlayerIndex);
+            nextPlayer();
         };
 
         const check = () => {
             if (!state.roundActive) return;
             if (state.players[state.currentPlayerIndex].bet < state.currentBet)
-                return alert('Cannot check — must call or fold');
-            state.actionCount++; nextPlayer();
+                return toast('Cannot check — must call or fold', 'error');
+            state.toAct = state.toAct.filter(i => i !== state.currentPlayerIndex);
+            nextPlayer();
         };
 
         const fold = () => {
             if (!state.roundActive) return;
             state.players[state.currentPlayerIndex].folded = true;
-            state.actionCount++; nextPlayer();
+            state.toAct = state.toAct.filter(i => i !== state.currentPlayerIndex);
+            nextPlayer();
         };
 
         const nextPlayer = () => {
-            const active = state.players.filter(p => !p.folded);
-            if (active.length === 1 && state.roundActive) {
-                const winner = active[0]; const pot = state.pot;
-                winner.stack += pot;
-                setTimeout(() => { alert(`${winner.name} wins ${pot} chips!`); resetTable(); }, 100);
+            const active = activePlayers();
+            if (active.length <= 1 && state.roundActive) {
+                const winner = active[0];
+                if (winner) {
+                    const winAmt = state.pot;
+                    winner.stack += winAmt;
+                    endRound();
+                    toast(`${winner.name} wins ${winAmt}!`, 'win');
+                }
                 return;
             }
-            let attempts = 0;
-            do {
-                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
-                attempts++;
-            } while (state.players[state.currentPlayerIndex].folded && attempts < state.players.length);
-            if (isBettingRoundComplete()) {
-                advanceRound();
-            } else {
-                render();
-                syncState();
+            if (state.toAct.length === 0) { advanceRound(); return; }
+            const n = state.players.length;
+            let next = (state.currentPlayerIndex + 1) % n;
+            for (let i = 0; i < n; i++) {
+                if (state.toAct.includes(next)) break;
+                next = (next + 1) % n;
             }
+            state.currentPlayerIndex = next;
+            render(); syncState();
         };
 
         const moveButton = () => {
@@ -408,14 +473,14 @@
         const resetTable = () => {
             state.pot = 0; state.sidePots = []; state.currentBet = 0;
             state.currentPlayerIndex = 0; state.roundActive = false;
-            state.street = 'preflop'; state.roundCount = 0;
+            state.street = 'preflop'; state.toAct = [];
             state.players.forEach(p => { p.bet = 0; p.folded = false; });
             render(); syncState();
         };
 
         const openEmptyPotModal = () => {
-            if (state.pot === 0) return alert('The pot is already empty!');
-            if (!state.players.length) return alert('No players at the table!');
+            if (state.pot === 0) return toast('The pot is already empty!', 'error');
+            if (!state.players.length) return toast('No players at the table!', 'error');
             els.modalPotAmount.textContent = state.pot;
             els.winnerSelect.innerHTML = '<option value="">Choose a player…</option>' +
                 state.players.map((p, i) => `<option value="${i}">${p.name} (${p.stack.toLocaleString()})</option>`).join('');
@@ -429,14 +494,14 @@
 
         const awardPotToPlayer = () => {
             const idx = els.winnerSelect.value;
-            if (idx === '') return alert('Please select a player!');
+            if (idx === '') return toast('Please select a player!', 'error');
             const winner = state.players[parseInt(idx)]; const amt = state.pot;
             els.pot.style.animation = 'potCollect .5s ease-out';
             setTimeout(() => {
-                winner.stack += amt; state.pot = 0;
-                state.players.forEach(p => p.bet = 0); state.currentBet = 0;
+                winner.stack += amt;
                 closeEmptyPotModal(); els.pot.style.animation = '';
-                render(); syncState(); alert(`${winner.name} wins ${amt} chips!`);
+                endRound();
+                toast(`${winner.name} wins ${amt}!`, 'win');
             }, 500);
         };
 
@@ -479,7 +544,7 @@
             const hostTimeout = setTimeout(() => {
                 if (!peer || !peer.open) {
                     setStatus('Connection failed', 'var(--red)');
-                    alert('Failed to connect to PeerJS server. Please refresh and try again.');
+                    toast('Failed to connect to PeerJS server. Please refresh and try again.', 'error');
                 }
             }, 10000);
 
@@ -543,7 +608,7 @@
                     const timeout = setTimeout(() => {
                         if (!connected) {
                             setStatus('Connection failed', 'var(--red)');
-                            alert('Could not connect to room. Make sure the host has opened their game first.');
+                            toast('Could not connect to room. Make sure the host has opened their game first.', 'error');
                         }
                     }, 15000);
 
@@ -559,13 +624,13 @@
 
                     conn.on('close', () => {
                         setStatus('Disconnected', 'var(--red)');
-                        alert('Disconnected from room.');
+                        toast('Disconnected from room.', 'error');
                     });
 
                     conn.on('error', err => {
                         connected = true; clearTimeout(timeout);
                         setStatus('Error', 'var(--red)');
-                        alert('Failed to connect to room.');
+                        toast('Failed to connect to room.', 'error');
                     });
                 }, 2000);
             });
@@ -573,7 +638,7 @@
             peer.on('error', err => {
                 setStatus('Error: ' + err.type, 'var(--red)');
                 if (err.type === 'peer-unavailable')
-                    alert('Room not found! Make sure the host opened their game first.');
+                    toast('Room not found! Make sure the host opened their game first.', 'error');
             });
         };
 
@@ -586,7 +651,7 @@
                     min:   state.minRaise || bb,
                     half:  Math.max(1, Math.floor(state.pot / 2)),
                     pot:   state.pot,
-                    allin: p ? p.stack : 0
+                    allin: p ? Math.max(0, p.stack - Math.max(0, state.currentBet - p.bet)) : 0
                 };
                 els.amount.value = Math.max(0, presets[btn.dataset.preset] || 0);
             };
@@ -605,7 +670,7 @@
         $('callBtn').onclick         = call;
         $('checkBtn').onclick        = check;
         $('foldBtn').onclick         = fold;
-        $('nextBtn').onclick         = nextPlayer;
+        $('nextBtn').onclick         = () => { state.toAct = state.toAct.filter(i => i !== state.currentPlayerIndex); nextPlayer(); };
         $('advanceRoundBtn').onclick = advanceRound;
         $('emptyPotBtn').onclick     = openEmptyPotModal;
         $('confirmEmptyPot').onclick = awardPotToPlayer;

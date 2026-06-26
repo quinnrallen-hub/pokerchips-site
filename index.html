@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0J9PC4FRSB"></script>
@@ -10,14 +12,11 @@
         gtag('js',new Date());
         gtag('config','G-0J9PC4FRSB');
     </script>
-    <meta name="google-adsense-account" content="ca-pub-6367769242716376">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6367769242716376" crossorigin="anonymous"></script>
-
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Live Poker Tracker - Free Online Poker Chip Counter & Game Manager</title>
-    <meta name="description" content="Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games, tournaments, and cash games. Track pots, bets, and player stacks in real-time with our digital poker chip counter.">
-    <meta name="keywords" content="poker tracker, poker chip counter, poker game tracker, home poker game, poker tournament tracker, poker blinds timer, poker chip manager, online poker tracker, free poker app, texas holdem tracker, poker game manager">
+    <meta name="description" content="Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games, tournaments, and cash games. Track pots, bets, and player stacks in real-time.">
+    <meta name="keywords" content="poker tracker, poker chip counter, poker game tracker, home poker game, poker tournament tracker, texas holdem tracker, free poker app">
     <meta name="author" content="Live Poker Chips">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://livepokerchips.com/">
@@ -25,17 +24,82 @@
     <meta property="og:description" content="Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games and tournaments.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://livepokerchips.com/">
-    <meta property="og:image" content="https://livepokerchips.com/favicon.svg">
+    <meta property="og:image" content="https://livepokerchips.com/icon-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
     <meta property="og:site_name" content="Live Poker Chips">
+    <meta property="og:locale" content="en_US">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Live Poker Tracker - Free Online Poker Chip Counter">
-    <meta name="twitter:description" content="Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games.">
-    <meta name="twitter:image" content="https://livepokerchips.com/favicon.svg">
+    <meta name="twitter:description" content="Free online poker tracker for managing chips, blinds, and game state.">
+    <meta name="twitter:image" content="https://livepokerchips.com/icon-512.png">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
-    <meta name="theme-color" content="#ffd166">
+    <meta name="theme-color" content="#0b0b0d">
+    <style>
+        #toast {
+            position: fixed; top: 68px; left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: var(--panel2); color: var(--text);
+            padding: 10px 20px; border-radius: 10px; border: 1px solid var(--line);
+            font-size: 14px; font-weight: 600; z-index: 300;
+            opacity: 0; pointer-events: none;
+            transition: opacity .18s, transform .18s;
+            white-space: nowrap; max-width: calc(100vw - 32px); text-align: center;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.toast-error { border-color: rgba(236,106,106,.4); color: var(--red); }
+        #toast.toast-win   { border-color: rgba(231,189,92,.4);  color: var(--gold); }
+
+        /* Tournament timer */
+        #timerDisplay {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            padding: 8px 16px; margin: 0 16px 8px;
+            background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+            font-size: 13px; font-weight: 600;
+        }
+        #timerDisplay.hidden { display: none; }
+        #timerLevel { color: var(--muted); }
+        #timerCountdown { font-size: 18px; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
+        #timerCountdown.timer-urgent { color: var(--red); animation: pulse 1s ease-in-out infinite; }
+
+        /* Player rebuy / remove buttons */
+        .player-action-row { display: flex; gap: 6px; margin-top: 8px; }
+        .player-action-btn {
+            flex: 1; padding: 5px 0; font-size: 11px; font-weight: 700;
+            border-radius: 6px; cursor: pointer; border: 1px solid transparent;
+            transition: opacity .15s;
+        }
+        .btn-rebuy  { background: rgba(95,207,142,.12); border-color: rgba(95,207,142,.3); color: var(--green); }
+        .btn-remove { background: rgba(236,106,106,.10); border-color: rgba(236,106,106,.25); color: var(--red); }
+        .btn-rebuy:hover  { background: rgba(95,207,142,.2); }
+        .btn-remove:hover { background: rgba(236,106,106,.18); }
+
+        /* Hand history */
+        #handHistory { margin: 0 16px 8px; border-radius: 10px; overflow: hidden; }
+        #handHistory.hidden { display: none; }
+        #handHistory summary {
+            padding: 8px 14px; background: var(--panel); border: 1px solid var(--line);
+            border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 700;
+            color: var(--muted); letter-spacing: .5px; text-transform: uppercase; list-style: none;
+        }
+        #handHistory[open] summary { border-radius: 10px 10px 0 0; border-bottom-color: transparent; }
+        #historyList { background: var(--panel); border: 1px solid var(--line); border-top: none; border-radius: 0 0 10px 10px; padding: 4px 0; max-height: 180px; overflow-y: auto; }
+        .history-entry {
+            padding: 5px 14px; font-size: 12px; color: var(--muted);
+            border-bottom: 1px solid var(--line2);
+        }
+        .history-entry:last-child { border-bottom: none; }
+        .history-entry strong { color: var(--text); }
+        .history-entry .mono { color: var(--gold); }
+
+        /* Side pot selectors in Award modal */
+        .pot-selector-row { margin-bottom: 12px; }
+        .pot-selector-row .pot-preview { margin-bottom: 6px; }
+        .pot-selector-row select { width: 100%; }
+    </style>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Poker Tracker">
@@ -44,28 +108,40 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Live Poker Tracker",
+        "alternateName": "LivePokerChips",
         "url": "https://livepokerchips.com",
-        "description": "Free online poker tracker for managing chips, blinds, and game state.",
+        "description": "Free online poker chip tracker for managing Texas Hold'em home games. Track stacks, blinds, pots, and betting rounds in real-time with multiplayer sync.",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Any",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        "browserRequirements": "Requires a modern web browser with JavaScript enabled",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "datePublished": "2025-11-01",
+        "dateModified": "2026-06-18",
+        "featureList": ["Chip stack tracking", "Blinds management", "Pot calculation", "Multiplayer P2P sync", "Offline PWA support"],
+        "screenshot": "https://livepokerchips.com/icon-512.png",
+        "author": { "@type": "Person", "name": "Quinn Allen" },
+        "publisher": { "@type": "Organization", "name": "Live Poker Chips", "url": "https://livepokerchips.com" }
     }
     </script>
 </head>
-<body>
+<body class="app">
     <header role="banner">
-        <h1>Live Poker Tracker</h1>
+        <a href="index.html" class="brand">
+            <span class="chip-mark"></span>
+            <span class="wordmark">LIVE<b>POKER</b></span>
+        </a>
         <nav role="navigation">
             <a href="about.html">About</a>
             <a href="guide.html">Guide</a>
             <a href="blog.html">Strategy</a>
-            <a href="connect.html" class="btn-mp">🎮 Multiplayer</a>
+            <a href="connect.html" class="btn-mp">Multiplayer</a>
         </nav>
     </header>
 
+    <h1 class="sr-only">Live Poker Tracker — Free Online Poker Chip Counter & Game Manager</h1>
+
     <div class="support-bar">
-        💛 Enjoying this?
-        <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener">Support development</a>
+        Enjoying this? <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener">Support development</a>
     </div>
 
     <!-- Pot display -->
@@ -77,23 +153,35 @@
         <div id="gameStatus">
             <span id="streetName">—</span>
             <span class="status-dot">·</span>
-            <span>Bet: <strong id="currentBet">0</strong></span>
+            <span>Bet <strong id="currentBet">0</strong></span>
         </div>
+    </div>
+
+    <!-- Tournament timer -->
+    <div id="timerDisplay" class="hidden">
+        <span id="timerLevel">Level 1</span>
+        <span id="timerCountdown" class="mono tnum">20:00</span>
     </div>
 
     <!-- Whose turn -->
     <div id="toActBanner">
-        <span id="currentPlayerName"></span>'s turn
+        <span id="currentPlayerName"></span> to act
     </div>
 
     <!-- Players -->
     <div id="players"></div>
 
+    <!-- Hand history -->
+    <details id="handHistory" class="hidden">
+        <summary>Hand History</summary>
+        <div id="historyList"></div>
+    </details>
+
     <!-- Setup -->
     <div id="setup">
         <div class="setup-row">
-            <input id="playerName" placeholder="Player name" autocomplete="off" aria-label="Player name">
-            <input id="playerStack" placeholder="Stack" type="number" value="1000" style="width:90px" aria-label="Starting stack">
+            <input id="playerName" placeholder="Player name" autocomplete="off" aria-label="Player name" style="flex:1;min-width:120px">
+            <input id="playerStack" class="mono" placeholder="Stack" type="number" value="1000" style="width:96px" aria-label="Starting stack">
             <button id="addPlayer">Add</button>
         </div>
         <div class="setup-row">
@@ -102,13 +190,24 @@
                 <span>Blinds</span>
             </label>
             <div id="blindsControls" class="hidden">
-                <input id="smallBlind" type="number" value="5" style="width:58px" aria-label="Small blind">
-                <span style="color:var(--muted)">/</span>
-                <input id="bigBlind" type="number" value="10" style="width:58px" aria-label="Big blind">
+                <input id="smallBlind" class="mono" type="number" value="5" style="width:60px" aria-label="Small blind">
+                <span style="color:var(--faint)">/</span>
+                <input id="bigBlind" class="mono" type="number" value="10" style="width:60px" aria-label="Big blind">
                 <button id="moveButton">Move BTN</button>
             </div>
             <button id="startRound" class="btn-start">Start Round</button>
             <button id="reset">Reset</button>
+        </div>
+        <div class="setup-row">
+            <label class="toggle-label">
+                <input type="checkbox" id="enableTournament">
+                <span>Tournament</span>
+            </label>
+            <div id="tournamentControls" class="hidden">
+                <input id="levelMinutes" class="mono" type="number" value="20" min="1" style="width:52px" aria-label="Minutes per level">
+                <span style="color:var(--faint);font-size:12px">min/lvl</span>
+                <button id="timerBtn">Start Timer</button>
+            </div>
         </div>
     </div>
 
@@ -116,10 +215,11 @@
     <div id="actionBar">
         <div id="amountRow">
             <button id="amountDown" class="amt-btn" aria-label="Decrease amount">−</button>
-            <input id="amount" type="number" min="0" value="10" aria-label="Bet amount">
+            <input id="amount" class="mono" type="number" min="0" value="10" aria-label="Bet amount">
             <button id="amountUp" class="amt-btn" aria-label="Increase amount">+</button>
             <button class="preset" data-preset="min">Min</button>
-            <button class="preset" data-preset="half">½ Pot</button>
+            <button class="preset" data-preset="half">½</button>
+            <button class="preset" data-preset="twothirds">⅔</button>
             <button class="preset" data-preset="pot">Pot</button>
             <button class="preset" data-preset="allin">All In</button>
         </div>
@@ -133,23 +233,47 @@
         <div id="adminActions">
             <button id="nextBtn">Skip Turn</button>
             <button id="advanceRoundBtn">Next Street</button>
-            <button id="emptyPotBtn">Award Pot 🏆</button>
+            <button id="emptyPotBtn">Award Pot</button>
         </div>
     </div>
+
+    <div id="toast" role="alert" aria-live="polite"></div>
 
     <!-- Award pot modal -->
     <div id="emptyPotModal" class="modal">
         <div class="modal-content">
             <h2>Award Pot</h2>
-            <div class="pot-preview">
-                <span class="muted">Pot:</span>
-                <span id="modalPotAmount" class="pot-amount">0</span>
+            <!-- Single pot (no all-ins) -->
+            <div id="singlePotRow">
+                <div class="pot-preview">
+                    <span class="muted">Pot</span>
+                    <span id="modalPotAmount" class="pot-amount mono">0</span>
+                </div>
+                <label>Winner</label>
+                <select id="winnerSelect"><option value="">Choose a player…</option></select>
             </div>
-            <label>Winner</label>
-            <select id="winnerSelect"><option value="">Choose a player…</option></select>
+            <!-- Side pots (all-in players present) -->
+            <div id="potSelectorContainer" class="hidden"></div>
             <div class="modal-buttons">
                 <button id="cancelEmptyPot">Cancel</button>
-                <button id="confirmEmptyPot" class="btn-award">Award 🏆</button>
+                <button id="confirmEmptyPot" class="btn-award">Award</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rebuy modal -->
+    <div id="rebuyModal" class="modal">
+        <div class="modal-content">
+            <h2>Rebuy</h2>
+            <div class="pot-preview">
+                <span class="muted">Player</span>
+                <span id="rebuyPlayerLabel" style="font-weight:700;color:var(--text)"></span>
+            </div>
+            <label>Amount</label>
+            <input id="rebuyAmount" class="mono" type="number" min="1" value="1000" style="width:100%">
+            <div class="modal-buttons">
+                <button id="cancelRebuy">Cancel</button>
+                <button id="confirmRebuy" class="btn-start">Rebuy</button>
             </div>
         </div>
     </div>
@@ -160,14 +284,21 @@
         const CONFIG = {
             DEFAULT_STACK: 1000, DEFAULT_SB: 5, DEFAULT_BB: 10,
             MIN_PLAYERS: 2, MAX_PLAYERS: 10, MAX_NAME_LENGTH: 20,
-            ANIMATION_THRESHOLD: 100, ANIMATION_DURATION: 300
+            ANIMATION_THRESHOLD: 100, ANIMATION_DURATION: 300,
+            SAVE_KEY: 'lpt_state'
         };
 
         let state = {
-            players: [], pot: 0, currentBet: 0, currentPlayerIndex: 0,
-            roundActive: false, street: 'preflop', roundCount: 0,
-            buttonPosition: 0, lastAggressor: -1, minRaise: 0, actionCount: 0
+            players: [],
+            pot: 0, currentBet: 0, currentPlayerIndex: 0,
+            roundActive: false, street: 'preflop',
+            buttonPosition: 0, minRaise: 0,
+            toAct: new Set(),
+            handHistory: [], handCount: 0,
+            tournament: { active: false, levelMinutes: 20, secondsLeft: 0, level: 1 }
         };
+
+        let _rebuyPlayerIdx = -1, _timerInterval = null, _saveTimer = null;
 
         const $ = id => document.getElementById(id);
         const els = {
@@ -181,48 +312,157 @@
             blindsControls: $('blindsControls')
         };
 
-        const animateNumber = (el, newValue) => {
-            const oldValue = parseInt(el.textContent) || 0;
-            if (oldValue === newValue) return;
-            el.classList.add('chip-update');
-            setTimeout(() => el.classList.remove('chip-update'), CONFIG.ANIMATION_DURATION);
-            if (Math.abs(newValue - oldValue) > CONFIG.ANIMATION_THRESHOLD) {
-                let current = oldValue;
-                const step = (newValue - oldValue) / 10;
-                const interval = setInterval(() => {
-                    current += step;
-                    if ((step > 0 && current >= newValue) || (step < 0 && current <= newValue)) {
-                        el.textContent = newValue; clearInterval(interval);
-                    } else {
-                        el.textContent = Math.round(current);
-                    }
-                }, 20);
-            } else {
-                el.textContent = newValue;
-            }
+        // ── Toast ────────────────────────────────────────────────
+        let _toastTimer;
+        const toast = (msg, type = '') => {
+            const el = $('toast');
+            el.textContent = msg;
+            el.className = 'show' + (type ? ' toast-' + type : '');
+            clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => { el.className = ''; }, 3500);
         };
 
+        // ── Persistence ──────────────────────────────────────────
+        const serializeState = () => ({ ...state, toAct: [...state.toAct] });
+
+        const saveState = () => {
+            try {
+                const s = serializeState();
+                if (s.tournament.active) s.tournament.savedAt = Date.now();
+                localStorage.setItem(CONFIG.SAVE_KEY, JSON.stringify(s));
+            } catch(e) {}
+        };
+
+        const debouncedSave = () => { clearTimeout(_saveTimer); _saveTimer = setTimeout(saveState, 300); };
+
+        const loadSavedState = () => {
+            try {
+                const raw = localStorage.getItem(CONFIG.SAVE_KEY);
+                if (!raw) return false;
+                const s = JSON.parse(raw);
+                if (!s.players || s.players.length === 0) return false;
+                state = {
+                    ...s,
+                    toAct: new Set(s.toAct || []),
+                    handHistory: s.handHistory || [],
+                    handCount: s.handCount || 0,
+                    tournament: s.tournament || { active: false, levelMinutes: 20, secondsLeft: 0, level: 1 }
+                };
+                // Ensure all players have handContrib (added in this version)
+                state.players.forEach(p => { if (p.handContrib == null) p.handContrib = 0; });
+                // Adjust timer for time elapsed while page was closed
+                const t = state.tournament;
+                if (t.active && t.savedAt) {
+                    const elapsed = Math.floor((Date.now() - t.savedAt) / 1000);
+                    t.secondsLeft = Math.max(0, t.secondsLeft - elapsed);
+                }
+                return true;
+            } catch(e) { return false; }
+        };
+
+        // ── Tournament timer ─────────────────────────────────────
+        const formatTime = secs => {
+            const m = Math.floor(Math.abs(secs) / 60);
+            const s = Math.abs(secs) % 60;
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        };
+
+        const syncTimerDisplay = () => {
+            const t = state.tournament;
+            if (!t.active) { $('timerDisplay').classList.add('hidden'); return; }
+            $('timerDisplay').classList.remove('hidden');
+            $('timerLevel').textContent = `Level ${t.level}`;
+            $('timerCountdown').textContent = formatTime(t.secondsLeft);
+            $('timerCountdown').classList.toggle('timer-urgent', t.secondsLeft <= 60 && t.secondsLeft > 0);
+        };
+
+        const bumpBlinds = () => {
+            const sb = parseInt(els.smallBlind.value) || CONFIG.DEFAULT_SB;
+            const bb = parseInt(els.bigBlind.value)   || CONFIG.DEFAULT_BB;
+            const round5 = n => Math.max(5, Math.round(n * 1.5 / 5) * 5);
+            els.smallBlind.value = round5(sb);
+            els.bigBlind.value   = round5(bb);
+            state.tournament.level++;
+            state.tournament.sb = parseInt(els.smallBlind.value);
+            state.tournament.bb = parseInt(els.bigBlind.value);
+            toast(`Level ${state.tournament.level} — Blinds ${els.smallBlind.value}/${els.bigBlind.value}`, 'win');
+        };
+
+        const runTimerTick = () => {
+            const t = state.tournament;
+            if (t.secondsLeft <= 0) {
+                bumpBlinds();
+                t.secondsLeft = t.levelMinutes * 60;
+            } else {
+                t.secondsLeft--;
+            }
+            syncTimerDisplay();
+            debouncedSave();
+        };
+
+        const startTimer = () => {
+            clearInterval(_timerInterval);
+            const t = state.tournament;
+            t.active = true;
+            t.levelMinutes = parseInt($('levelMinutes').value) || 20;
+            t.secondsLeft = t.levelMinutes * 60;
+            $('timerBtn').textContent = 'Stop Timer';
+            syncTimerDisplay();
+            _timerInterval = setInterval(runTimerTick, 1000);
+        };
+
+        const stopTimer = () => {
+            clearInterval(_timerInterval); _timerInterval = null;
+            state.tournament.active = false;
+            $('timerBtn').textContent = 'Start Timer';
+            syncTimerDisplay();
+        };
+
+        const resumeTimer = () => {
+            if (!state.tournament.active) return;
+            $('timerBtn').textContent = 'Stop Timer';
+            $('levelMinutes').value = state.tournament.levelMinutes;
+            _timerInterval = setInterval(runTimerTick, 1000);
+            syncTimerDisplay();
+        };
+
+        // ── Animate numbers ──────────────────────────────────────
+        const animateNumber = (el, newVal) => {
+            const oldVal = parseInt(el.textContent) || 0;
+            if (oldVal === newVal) return;
+            el.classList.add('chip-update');
+            setTimeout(() => el.classList.remove('chip-update'), CONFIG.ANIMATION_DURATION);
+            if (Math.abs(newVal - oldVal) > CONFIG.ANIMATION_THRESHOLD) {
+                let cur = oldVal;
+                const step = (newVal - oldVal) / 10;
+                const iv = setInterval(() => {
+                    cur += step;
+                    if ((step > 0 && cur >= newVal) || (step < 0 && cur <= newVal)) {
+                        el.textContent = newVal; clearInterval(iv);
+                    } else { el.textContent = Math.round(cur); }
+                }, 20);
+            } else { el.textContent = newVal; }
+        };
+
+        // ── Render ───────────────────────────────────────────────
         const render = () => {
             animateNumber(els.pot, state.pot);
             animateNumber(els.currentBet, state.currentBet);
             els.streetName.textContent = state.street ? state.street.toUpperCase() : '—';
 
-            const curP = state.roundActive && state.players.length > 0
-                ? state.players[state.currentPlayerIndex] : null;
+            const atShowdown = state.street === 'showdown';
+            const curP = state.roundActive ? state.players[state.currentPlayerIndex] : null;
 
-            const banner = $('toActBanner');
-            banner.style.display = curP ? 'flex' : 'none';
-            if (curP) els.currentPlayerName.textContent = curP.name;
-
+            $('toActBanner').style.display = curP && !atShowdown ? 'flex' : 'none';
             if (curP) {
+                els.currentPlayerName.textContent = curP.name;
                 const toCall = Math.min(state.currentBet - curP.bet, curP.stack);
-                $('callBtn').textContent = toCall > 0 ? `Call ${toCall}` : 'Call';
+                $('callBtn').textContent = `Call ${toCall}`;
             }
 
-            // Player tiles
             const n = state.players.length;
             els.players.innerHTML = state.players.map((p, i) => {
-                const isActive = i === state.currentPlayerIndex && state.roundActive;
+                const isActive = i === state.currentPlayerIndex && state.roundActive && !atShowdown;
                 const isBtn = n >= 2 && i === state.buttonPosition;
                 const isSB  = n >= 3 && i === (state.buttonPosition + 1) % n;
                 const isBB  = n >= 2 && i === (state.buttonPosition + (n === 2 ? 1 : 2)) % n;
@@ -231,161 +471,306 @@
                     isSB  ? '<span class="badge badge-sb">SB</span>'  : '',
                     isBB  ? '<span class="badge badge-bb">BB</span>'  : ''
                 ].join('');
-                const sub = p.folded ? 'FOLDED' : (p.bet > 0 ? `bet: ${p.bet}` : '');
-                return `<div class="player${isActive ? ' active' : ''}${p.folded ? ' folded' : ''}">
+                const sub = p.folded ? 'folded' : p.stack === 0 ? 'all-in' : p.bet > 0 ? `bet ${p.bet}` : '';
+                const canAct = p.stack === 0 && !state.roundActive;
+                const actions = canAct ? `<div class="player-action-row">
+                    <button class="player-action-btn btn-rebuy" data-action="rebuy" data-idx="${i}">Rebuy</button>
+                    <button class="player-action-btn btn-remove" data-action="remove" data-idx="${i}">Remove</button>
+                </div>` : '';
+                return `<div class="player${isActive ? ' active' : ''}${p.folded ? ' folded' : ''}${p.stack === 0 && !p.folded ? ' allin' : ''}">
                     <div class="player-top">
                         <span class="player-name">${p.name}</span>
                         <span class="player-badges">${badges}</span>
                     </div>
-                    <div class="player-stack">${p.stack.toLocaleString()}</div>
+                    <div class="player-stack-row">
+                        <span class="chip-glyph"></span>
+                        <span class="player-stack mono tnum">${p.stack.toLocaleString()}</span>
+                    </div>
                     <div class="player-sub">${sub}</div>
+                    ${actions}
                 </div>`;
             }).join('');
 
-            // Action bar — contextual visibility
-            const on = state.roundActive;
+            // Hand history
+            const histEl = $('handHistory');
+            if (state.handHistory.length > 0) {
+                histEl.classList.remove('hidden');
+                $('historyList').innerHTML = [...state.handHistory].reverse().map(h =>
+                    `<div class="history-entry">Hand ${h.hand}: <strong>${h.winner}</strong> wins <span class="mono">${h.amount}</span></div>`
+                ).join('');
+            } else {
+                histEl.classList.add('hidden');
+            }
+
+            const on = state.roundActive && !atShowdown;
             const hasBet = state.currentBet > 0;
+            const alreadyIn = curP ? curP.bet >= state.currentBet : false;
             $('amountRow').style.display      = on ? 'flex' : 'none';
             $('primaryActions').style.display = on ? 'flex' : 'none';
-            $('foldBtn').style.display        = on && hasBet  ? '' : 'none';
-            $('callBtn').style.display        = on && hasBet  ? '' : 'none';
-            $('raiseBtn').style.display       = on && hasBet  ? '' : 'none';
-            $('checkBtn').style.display       = on && !hasBet ? '' : 'none';
-            $('betBtn').style.display         = on && !hasBet ? '' : 'none';
+            $('foldBtn').style.display        = on && hasBet && !alreadyIn ? '' : 'none';
+            $('callBtn').style.display        = on && hasBet && !alreadyIn ? '' : 'none';
+            $('raiseBtn').style.display       = on && hasBet              ? '' : 'none';
+            $('checkBtn').style.display       = on && (!hasBet || alreadyIn) ? '' : 'none';
+            $('betBtn').style.display         = on && !hasBet             ? '' : 'none';
+
+            syncTimerDisplay();
+            debouncedSave();
         };
 
+        // ── Helpers ──────────────────────────────────────────────
+        const activePlayers = () => state.players.filter(p => !p.folded);
+
+        const rebuildToAct = (excludeIdx = -1) => {
+            state.toAct = new Set(
+                state.players
+                    .map((p, i) => ({ p, i }))
+                    .filter(({ p, i }) => !p.folded && p.stack > 0 && i !== excludeIdx)
+                    .map(({ i }) => i)
+            );
+        };
+
+        // Centralize chip movement so handContrib stays in sync
+        const addChips = (p, amount) => {
+            p.stack -= amount; p.bet += amount;
+            p.handContrib = (p.handContrib || 0) + amount;
+            state.pot += amount;
+        };
+
+        // Compute main pot + side pots from per-player hand contributions.
+        // Uses the level-slicing algorithm so partial contributions (e.g. fold pre-flop for less)
+        // and multiple all-ins are handled correctly.
+        const computePots = () => {
+            const notFolded = state.players
+                .map((p, i) => ({ i, invested: p.handContrib || 0, stack: p.stack, folded: p.folded }))
+                .filter(c => !c.folded);
+            const hasAllIn = notFolded.some(c => c.stack === 0);
+            if (!hasAllIn) return [{ amount: state.pot, eligible: notFolded.map(c => c.i) }];
+
+            // Pot levels = each unique all-in amount + maxInvested (uncapped tier)
+            const levels = [...new Set(
+                notFolded.filter(c => c.stack === 0).map(c => c.invested)
+            )].sort((a, b) => a - b);
+            const maxInvested = Math.max(...state.players.map(p => p.handContrib || 0));
+            if (!levels.includes(maxInvested)) levels.push(maxInvested);
+
+            let covered = 0;
+            const pots = [];
+            for (const level of levels) {
+                if (level <= covered) continue;
+                // Slice = sum of min(player_invested, level) - min(player_invested, covered) for ALL players
+                const slice = state.players.reduce((sum, p) =>
+                    sum + Math.max(0, Math.min(p.handContrib || 0, level) - Math.min(p.handContrib || 0, covered)), 0);
+                const eligible = notFolded.filter(c => c.invested >= level).map(c => c.i);
+                if (slice > 0 && eligible.length > 0) pots.push({ amount: slice, eligible });
+                covered = level;
+            }
+
+            // Rounding guard: make sure pots sum to state.pot
+            const total = pots.reduce((s, p) => s + p.amount, 0);
+            if (total < state.pot && pots.length > 0) pots[pots.length - 1].amount += state.pot - total;
+            return pots.length > 0 ? pots : [{ amount: state.pot, eligible: notFolded.map(c => c.i) }];
+        };
+
+        // ── Add player ───────────────────────────────────────────
         const addPlayer = () => {
             const name = els.playerName.value.trim().substring(0, CONFIG.MAX_NAME_LENGTH);
             const stack = parseInt(els.playerStack.value) || CONFIG.DEFAULT_STACK;
-            if (!name) return alert('Please enter a player name');
-            if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) return alert('Name can only contain letters, numbers, spaces, - and _');
-            if (state.players.length >= CONFIG.MAX_PLAYERS) return alert(`Maximum ${CONFIG.MAX_PLAYERS} players`);
-            if (stack <= 0 || isNaN(stack)) return alert('Please enter a valid stack amount');
-            state.players.push({ name, stack, bet: 0, folded: false });
+            if (!name) return toast('Enter a player name', 'error');
+            if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) return toast('Name: letters, numbers, spaces, - and _ only', 'error');
+            if (state.players.length >= CONFIG.MAX_PLAYERS) return toast(`Maximum ${CONFIG.MAX_PLAYERS} players`, 'error');
+            if (stack <= 0 || isNaN(stack)) return toast('Enter a valid stack amount', 'error');
+            state.players.push({ name, stack, bet: 0, folded: false, handContrib: 0 });
             els.playerName.value = '';
             render();
         };
 
-        const autoAdvanceStreet = () => {
-            const streets = { preflop: 'flop', flop: 'turn', turn: 'river', river: 'showdown' };
-            state.street = streets[state.street] || 'showdown';
+        // ── Remove player (only when busted and round not active) ─
+        const removePlayer = idx => {
+            const name = state.players[idx].name;
+            state.players.splice(idx, 1);
+            if (state.buttonPosition >= state.players.length)
+                state.buttonPosition = Math.max(0, state.players.length - 1);
+            toast(`${name} eliminated`, 'error');
             render();
         };
 
-        const isBettingRoundComplete = () => {
-            const active = state.players.filter(p => !p.folded);
-            if (active.length <= 1) return true;
-            const allBetsEqual = active.every(p => p.bet === state.currentBet || p.stack === 0);
-            if (!allBetsEqual) return false;
-            return state.actionCount >= active.length;
+        // ── Rebuy modal ──────────────────────────────────────────
+        const openRebuyModal = idx => {
+            _rebuyPlayerIdx = idx;
+            $('rebuyPlayerLabel').textContent = state.players[idx].name;
+            $('rebuyAmount').value = parseInt(els.playerStack.value) || CONFIG.DEFAULT_STACK;
+            $('rebuyModal').classList.add('active');
         };
 
-        const advanceRound = () => {
-            if (!isBettingRoundComplete()) return alert('All players must match the current bet first!');
-            state.players.forEach(p => p.bet = 0);
-            state.currentBet = 0; state.minRaise = 0; state.lastAggressor = -1; state.actionCount = 0;
-            state.currentPlayerIndex = (state.buttonPosition + 1) % state.players.length;
-            let attempts = 0;
-            while (state.players[state.currentPlayerIndex].folded && attempts < state.players.length) {
-                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
-                attempts++;
-            }
-            state.roundCount++;
-            autoAdvanceStreet();
+        const closeRebuyModal = () => {
+            $('rebuyModal').classList.remove('active');
+            _rebuyPlayerIdx = -1;
         };
 
+        const confirmRebuy = () => {
+            if (_rebuyPlayerIdx < 0) return;
+            const amount = parseInt($('rebuyAmount').value);
+            if (isNaN(amount) || amount <= 0) return toast('Enter a valid rebuy amount', 'error');
+            state.players[_rebuyPlayerIdx].stack += amount;
+            toast(`${state.players[_rebuyPlayerIdx].name} rebuys ${amount.toLocaleString()}`, 'win');
+            closeRebuyModal();
+            render();
+        };
+
+        // ── Start round ──────────────────────────────────────────
         const startRound = () => {
-            if (state.players.length < CONFIG.MIN_PLAYERS) return alert(`Need at least ${CONFIG.MIN_PLAYERS} players`);
+            if (state.players.length < CONFIG.MIN_PLAYERS)
+                return toast(`Need at least ${CONFIG.MIN_PLAYERS} players`, 'error');
+            if (state.players.filter(p => p.stack > 0).length < CONFIG.MIN_PLAYERS)
+                return toast('Not enough players with chips — rebuy or remove busted players', 'error');
+
             state.roundActive = true; state.pot = 0; state.street = 'preflop';
-            state.roundCount = 0; state.actionCount = 0; state.lastAggressor = -1;
-            state.players.forEach(p => { p.bet = 0; p.folded = false; });
-            const isHeadsUp = state.players.length === 2;
+            state.handCount++;
+            state.players.forEach(p => { p.bet = 0; p.folded = p.stack === 0; p.handContrib = 0; });
+
+            const n = state.players.length;
+            const isHeadsUp = n === 2;
             const blindsOn = $('enableBlinds').checked;
+
             if (blindsOn) {
                 const sb = parseInt(els.smallBlind.value) || CONFIG.DEFAULT_SB;
-                const bb = parseInt(els.bigBlind.value) || CONFIG.DEFAULT_BB;
-                const n = state.players.length;
+                const bb = parseInt(els.bigBlind.value)   || CONFIG.DEFAULT_BB;
                 const sbPos = isHeadsUp ? state.buttonPosition : (state.buttonPosition + 1) % n;
                 const bbPos = isHeadsUp ? (state.buttonPosition + 1) % n : (state.buttonPosition + 2) % n;
                 const sbP = state.players[sbPos], bbP = state.players[bbPos];
-                const sbAmt = Math.min(sb, sbP.stack);
-                sbP.stack -= sbAmt; sbP.bet = sbAmt; state.pot += sbAmt;
-                const bbAmt = Math.min(bb, bbP.stack);
-                bbP.stack -= bbAmt; bbP.bet = bbAmt; state.pot += bbAmt;
+                addChips(sbP, Math.min(sb, sbP.stack));
+                addChips(bbP, Math.min(bb, bbP.stack));
                 state.currentBet = bb; state.minRaise = bb;
                 state.currentPlayerIndex = isHeadsUp ? state.buttonPosition : (state.buttonPosition + 3) % n;
             } else {
                 state.currentBet = 0; state.minRaise = 0;
-                state.currentPlayerIndex = state.buttonPosition;
+                state.currentPlayerIndex = (state.buttonPosition + 1) % n;
             }
+
+            for (let i = 0; i < n; i++) {
+                if (!state.players[state.currentPlayerIndex].folded) break;
+                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % n;
+            }
+
+            state.toAct = new Set(state.players.map((p, i) => p.folded ? null : i).filter(i => i !== null));
             render();
         };
 
+        // ── Street / round advance ───────────────────────────────
+        const advanceStreet = () => {
+            const next = { preflop: 'flop', flop: 'turn', turn: 'river', river: 'showdown' };
+            state.street = next[state.street] || 'showdown';
+        };
+
+        const advanceRound = () => {
+            state.players.forEach(p => p.bet = 0);
+            state.currentBet = 0; state.minRaise = 0;
+            advanceStreet();
+
+            if (state.street === 'showdown') {
+                state.toAct = new Set();
+                toast('Showdown — award the pot', 'win');
+                render(); return;
+            }
+
+            rebuildToAct();
+            if (state.toAct.size === 0) { advanceRound(); return; } // everyone all-in, run the board
+
+            const n = state.players.length;
+            let idx = (state.buttonPosition + 1) % n;
+            for (let i = 0; i < n; i++) {
+                if (state.toAct.has(idx)) break;
+                idx = (idx + 1) % n;
+            }
+            state.currentPlayerIndex = idx;
+            render();
+        };
+
+        // ── Betting actions ──────────────────────────────────────
         const bet = () => {
             if (!state.roundActive) return;
             const amount = parseInt(els.amount.value);
-            if (isNaN(amount) || amount <= 0) return alert('Please enter a valid bet amount');
+            if (isNaN(amount) || amount <= 0) return toast('Enter a valid bet amount', 'error');
             const p = state.players[state.currentPlayerIndex];
-            if (state.currentBet > 0) return alert('There is already a bet — use Raise instead');
-            if (amount > p.stack) return alert('Not enough chips');
-            p.stack -= amount; p.bet += amount; state.pot += amount;
-            state.currentBet = p.bet; state.minRaise = amount;
-            state.lastAggressor = state.currentPlayerIndex; state.actionCount = 0;
+            if (state.currentBet > 0) return toast('Bet already placed — use Raise', 'error');
+            if (amount > p.stack)     return toast('Not enough chips', 'error');
+            addChips(p, amount);
+            state.currentBet = amount; state.minRaise = amount;
+            rebuildToAct(state.currentPlayerIndex);
             nextPlayer();
         };
 
         const raise = () => {
             if (!state.roundActive) return;
-            const raiseAmount = parseInt(els.amount.value);
-            if (isNaN(raiseAmount) || raiseAmount <= 0) return alert('Please enter a valid raise amount');
-            if (state.minRaise > 0 && raiseAmount < state.minRaise)
-                return alert(`Minimum raise is ${state.minRaise}`);
+            const raiseAmt = parseInt(els.amount.value);
+            if (isNaN(raiseAmt) || raiseAmt <= 0) return toast('Enter a valid raise amount', 'error');
+            if (state.minRaise > 0 && raiseAmt < state.minRaise)
+                return toast(`Minimum raise is ${state.minRaise}`, 'error');
             const p = state.players[state.currentPlayerIndex];
             const toCall = state.currentBet - p.bet;
-            const needed = toCall + raiseAmount;
-            if (needed > p.stack) return alert('Not enough chips');
-            p.stack -= needed; p.bet += needed; state.pot += needed;
+            const needed = toCall + raiseAmt;
+            if (needed > p.stack) return toast('Not enough chips', 'error');
+            addChips(p, needed);
             const prev = state.currentBet;
             state.currentBet = p.bet; state.minRaise = p.bet - prev;
-            state.lastAggressor = state.currentPlayerIndex; state.actionCount = 0;
+            rebuildToAct(state.currentPlayerIndex);
             nextPlayer();
         };
 
         const call = () => {
             if (!state.roundActive) return;
             const p = state.players[state.currentPlayerIndex];
-            const toCall = Math.min(state.currentBet - p.bet, p.stack);
-            p.stack -= toCall; p.bet += toCall; state.pot += toCall;
-            state.actionCount++; nextPlayer();
+            addChips(p, Math.min(state.currentBet - p.bet, p.stack));
+            state.toAct.delete(state.currentPlayerIndex);
+            nextPlayer();
         };
 
         const check = () => {
             if (!state.roundActive) return;
             if (state.players[state.currentPlayerIndex].bet < state.currentBet)
-                return alert('Cannot check — must call or fold');
-            state.actionCount++; nextPlayer();
+                return toast('Cannot check — must call or fold', 'error');
+            state.toAct.delete(state.currentPlayerIndex);
+            nextPlayer();
         };
 
         const fold = () => {
             if (!state.roundActive) return;
             state.players[state.currentPlayerIndex].folded = true;
-            state.actionCount++; nextPlayer();
+            state.toAct.delete(state.currentPlayerIndex);
+            nextPlayer();
         };
 
+        // ── Next player ──────────────────────────────────────────
         const nextPlayer = () => {
-            const active = state.players.filter(p => !p.folded);
+            const active = activePlayers();
             if (active.length === 1 && state.roundActive) {
-                const winner = active[0]; const pot = state.pot;
-                winner.stack += pot;
-                setTimeout(() => { alert(`${winner.name} wins ${pot} chips!`); resetTable(); }, 100);
+                const winner = active[0];
+                const winAmt = state.pot;
+                winner.stack += winAmt;
+                state.handHistory.push({ hand: state.handCount, winner: winner.name, amount: winAmt });
+                endRound();
+                toast(`${winner.name} wins ${winAmt}!`, 'win');
                 return;
             }
-            let attempts = 0;
-            do {
-                state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
-                attempts++;
-            } while (state.players[state.currentPlayerIndex].folded && attempts < state.players.length);
-            if (isBettingRoundComplete()) { advanceRound(); } else { render(); }
+            if (state.toAct.size === 0) { advanceRound(); return; }
+            const n = state.players.length;
+            let next = (state.currentPlayerIndex + 1) % n;
+            for (let i = 0; i < n; i++) {
+                if (state.toAct.has(next)) break;
+                next = (next + 1) % n;
+            }
+            state.currentPlayerIndex = next;
+            render();
+        };
+
+        // ── Round / table management ─────────────────────────────
+        const endRound = () => {
+            state.pot = 0; state.currentBet = 0; state.currentPlayerIndex = 0;
+            state.roundActive = false; state.street = 'preflop';
+            state.minRaise = 0; state.toAct = new Set();
+            state.players.forEach(p => { p.bet = 0; p.folded = false; p.handContrib = 0; });
+            state.buttonPosition = (state.buttonPosition + 1) % Math.max(1, state.players.length);
+            render();
         };
 
         const moveButton = () => {
@@ -396,48 +781,116 @@
 
         const resetTable = () => {
             state.pot = 0; state.currentBet = 0; state.currentPlayerIndex = 0;
-            state.roundActive = false; state.street = 'preflop'; state.roundCount = 0;
-            state.players.forEach(p => { p.bet = 0; p.folded = false; });
+            state.roundActive = false; state.street = 'preflop';
+            state.minRaise = 0; state.toAct = new Set();
+            state.players.forEach(p => { p.bet = 0; p.folded = false; p.handContrib = 0; });
             render();
         };
 
+        // ── Award pot modal (with side pot support) ──────────────
         const openEmptyPotModal = () => {
-            if (state.pot === 0) return alert('The pot is already empty!');
-            if (!state.players.length) return alert('No players at the table!');
-            els.modalPotAmount.textContent = state.pot;
-            els.winnerSelect.innerHTML = '<option value="">Choose a player…</option>' +
-                state.players.map((p, i) => `<option value="${i}">${p.name} (${p.stack.toLocaleString()})</option>`).join('');
-            els.emptyPotModal.classList.add('active');
+            if (state.pot === 0)       return toast('Pot is already empty', 'error');
+            if (!state.players.length) return toast('No players at the table', 'error');
+            const pots = computePots();
+            const modal = $('emptyPotModal');
+
+            if (pots.length === 1) {
+                $('singlePotRow').classList.remove('hidden');
+                $('potSelectorContainer').classList.add('hidden');
+                els.modalPotAmount.textContent = pots[0].amount;
+                els.winnerSelect.innerHTML = '<option value="">Choose a player…</option>' +
+                    pots[0].eligible.map(i =>
+                        `<option value="${i}">${state.players[i].name} (${state.players[i].stack.toLocaleString()})</option>`
+                    ).join('');
+            } else {
+                $('singlePotRow').classList.add('hidden');
+                $('potSelectorContainer').classList.remove('hidden');
+                $('potSelectorContainer').innerHTML = pots.map((pot, pi) => `
+                    <div class="pot-selector-row">
+                        <div class="pot-preview">
+                            <span class="muted">${pi === 0 ? 'Main Pot' : `Side Pot ${pi}`}</span>
+                            <span class="pot-amount mono">${pot.amount}</span>
+                        </div>
+                        <select class="side-pot-select" data-pot="${pi}">
+                            <option value="">Choose winner…</option>
+                            ${pot.eligible.map(i =>
+                                `<option value="${i}">${state.players[i].name} (${state.players[i].stack.toLocaleString()})</option>`
+                            ).join('')}
+                        </select>
+                    </div>`).join('');
+                modal.dataset.pots = JSON.stringify(pots);
+            }
+            modal.classList.add('active');
         };
 
         const closeEmptyPotModal = () => {
-            els.emptyPotModal.classList.remove('active');
+            $('emptyPotModal').classList.remove('active');
             els.winnerSelect.value = '';
         };
 
         const awardPotToPlayer = () => {
-            const idx = els.winnerSelect.value;
-            if (idx === '') return alert('Please select a player!');
-            const winner = state.players[parseInt(idx)]; const amt = state.pot;
-            els.pot.style.animation = 'potCollect .5s ease-out';
-            setTimeout(() => {
-                winner.stack += amt; state.pot = 0;
-                state.players.forEach(p => p.bet = 0); state.currentBet = 0;
-                closeEmptyPotModal(); els.pot.style.animation = '';
-                render(); alert(`${winner.name} wins ${amt} chips!`);
-            }, 500);
+            const modal = $('emptyPotModal');
+            const isSingle = !$('singlePotRow').classList.contains('hidden');
+
+            if (isSingle) {
+                const idx = els.winnerSelect.value;
+                if (idx === '') return toast('Select a player', 'error');
+                const winner = state.players[parseInt(idx)];
+                const amt = state.pot;
+                els.pot.style.animation = 'potCollect .5s ease-out';
+                setTimeout(() => {
+                    winner.stack += amt;
+                    state.handHistory.push({ hand: state.handCount, winner: winner.name, amount: amt });
+                    els.pot.style.animation = '';
+                    closeEmptyPotModal();
+                    endRound();
+                    toast(`${winner.name} wins ${amt}!`, 'win');
+                }, 500);
+            } else {
+                const selects = [...document.querySelectorAll('.side-pot-select')];
+                const pots = JSON.parse(modal.dataset.pots || '[]');
+                let valid = true;
+                selects.forEach((sel, pi) => {
+                    if (sel.value === '') {
+                        toast(`Select a winner for ${pi === 0 ? 'the main pot' : `side pot ${pi}`}`, 'error');
+                        valid = false;
+                    }
+                });
+                if (!valid) return;
+
+                const assignments = selects.map((sel, pi) => ({
+                    winnerIdx: parseInt(sel.value), amount: pots[pi].amount
+                }));
+                els.pot.style.animation = 'potCollect .5s ease-out';
+                setTimeout(() => {
+                    const parts = assignments.map(({ winnerIdx, amount }) => {
+                        state.players[winnerIdx].stack += amount;
+                        return `${state.players[winnerIdx].name} +${amount}`;
+                    });
+                    state.handHistory.push({
+                        hand: state.handCount,
+                        winner: assignments.map(a => state.players[a.winnerIdx].name).join(' & '),
+                        amount: assignments.reduce((s, a) => s + a.amount, 0)
+                    });
+                    els.pot.style.animation = '';
+                    closeEmptyPotModal();
+                    endRound();
+                    toast(parts.join(' · '), 'win');
+                }, 500);
+            }
         };
 
-        // Amount presets
+        // ── Preset amounts ───────────────────────────────────────
         document.querySelectorAll('.preset').forEach(btn => {
             btn.onclick = () => {
                 const p = state.players[state.currentPlayerIndex];
                 const bb = parseInt(els.bigBlind.value) || CONFIG.DEFAULT_BB;
                 const presets = {
-                    min:   state.minRaise || bb,
-                    half:  Math.max(1, Math.floor(state.pot / 2)),
-                    pot:   state.pot,
-                    allin: p ? p.stack : 0
+                    min:       state.minRaise || bb,
+                    half:      Math.max(1, Math.floor(state.pot / 2)),
+                    twothirds: Math.max(1, Math.round(state.pot * 2 / 3)),
+                    pot:       state.pot,
+                    allin:     p ? Math.max(0, p.stack - Math.max(0, state.currentBet - p.bet)) : 0
                 };
                 els.amount.value = Math.max(0, presets[btn.dataset.preset] || 0);
             };
@@ -447,26 +900,59 @@
         $('amountDown').onclick = () => els.amount.value = Math.max(0, (parseInt(els.amount.value) || 0) - amountStep());
         $('amountUp').onclick   = () => els.amount.value = (parseInt(els.amount.value) || 0) + amountStep();
 
-        $('addPlayer').onclick      = addPlayer;
-        $('startRound').onclick     = startRound;
-        $('moveButton').onclick     = moveButton;
-        $('reset').onclick          = resetTable;
-        $('betBtn').onclick         = bet;
-        $('raiseBtn').onclick       = raise;
-        $('callBtn').onclick        = call;
-        $('checkBtn').onclick       = check;
-        $('foldBtn').onclick        = fold;
-        $('nextBtn').onclick        = nextPlayer;
+        // ── Event bindings ───────────────────────────────────────
+        $('addPlayer').onclick       = addPlayer;
+        $('startRound').onclick      = startRound;
+        $('moveButton').onclick      = moveButton;
+        $('reset').onclick           = resetTable;
+        $('betBtn').onclick          = bet;
+        $('raiseBtn').onclick        = raise;
+        $('callBtn').onclick         = call;
+        $('checkBtn').onclick        = check;
+        $('foldBtn').onclick         = fold;
+        $('nextBtn').onclick         = () => { state.toAct.delete(state.currentPlayerIndex); nextPlayer(); };
         $('advanceRoundBtn').onclick = advanceRound;
-        $('emptyPotBtn').onclick    = openEmptyPotModal;
+        $('emptyPotBtn').onclick     = openEmptyPotModal;
         $('confirmEmptyPot').onclick = awardPotToPlayer;
-        $('cancelEmptyPot').onclick = closeEmptyPotModal;
-        els.emptyPotModal.onclick   = e => { if (e.target === els.emptyPotModal) closeEmptyPotModal(); };
+        $('cancelEmptyPot').onclick  = closeEmptyPotModal;
+        $('emptyPotModal').onclick   = e => { if (e.target === $('emptyPotModal')) closeEmptyPotModal(); };
+        $('rebuyModal').onclick      = e => { if (e.target === $('rebuyModal')) closeRebuyModal(); };
+        $('cancelRebuy').onclick     = closeRebuyModal;
+        $('confirmRebuy').onclick    = confirmRebuy;
+        $('rebuyAmount').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); confirmRebuy(); } });
+        $('timerBtn').onclick        = () => state.tournament.active ? stopTimer() : startTimer();
+
+        // Event delegation for player Rebuy / Remove buttons
+        els.players.addEventListener('click', e => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const idx = parseInt(btn.dataset.idx);
+            if (btn.dataset.action === 'rebuy')  openRebuyModal(idx);
+            if (btn.dataset.action === 'remove') removePlayer(idx);
+        });
+
         els.playerName.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPlayer(); } });
         $('enableBlinds').addEventListener('change', e => {
             els.blindsControls.classList.toggle('hidden', !e.target.checked);
         });
+        $('enableTournament').addEventListener('change', e => {
+            $('tournamentControls').classList.toggle('hidden', !e.target.checked);
+            if (!e.target.checked) stopTimer();
+        });
 
+        // ── Init ─────────────────────────────────────────────────
+        const hasSaved = loadSavedState();
+        if (hasSaved) {
+            // Sync UI controls to restored state
+            if (state.tournament.active) {
+                $('enableTournament').checked = true;
+                $('tournamentControls').classList.remove('hidden');
+                resumeTimer();
+            }
+            if (state.tournament.sb) els.smallBlind.value = state.tournament.sb;
+            if (state.tournament.bb) els.bigBlind.value   = state.tournament.bb;
+            if (state.players.length > 0) toast('Game restored — welcome back!');
+        }
         render();
     </script>
 
@@ -480,7 +966,7 @@
     </script>
 
     <footer>
-        <p>Free poker tracker · No registration required · Works on any device</p>
+        <p>Free poker tracker · No registration · Works on any device</p>
         <p><a href="about.html">About</a> · <a href="guide.html">How to Play</a> · <a href="blog.html">Strategy</a></p>
     </footer>
 </body>
