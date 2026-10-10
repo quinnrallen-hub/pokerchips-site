@@ -15,9 +15,9 @@
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Multiplayer Poker Game Room | Live Poker Tracker</title>
-    <meta name="description" content="Real-time multiplayer poker game with synchronized chip tracking. Play online poker with friends using peer-to-peer connections.">
-    <meta name="keywords" content="multiplayer poker game, online poker room, real-time poker, synchronized poker tracker">
+    <title data-i18n="multiplayer.0">Multiplayer Poker Game Room | Live Poker Tracker</title>
+    <meta name="description" content="Real-time multiplayer poker game with synchronized chip tracking. Play online poker with friends using peer-to-peer connections." data-i18n-attributes="{&quot;content&quot;: &quot;multiplayer.meta.description&quot;}">
+    <meta name="keywords" content="multiplayer poker game, online poker room, real-time poker, synchronized poker tracker" data-i18n-attributes="{&quot;content&quot;: &quot;multiplayer.meta.keywords&quot;}">
     <meta name="robots" content="noindex, follow">
     <link rel="canonical" href="https://livepokerchips.com/multiplayer.html">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -26,39 +26,49 @@
     <link rel="stylesheet" href="styles.css">
     <meta name="theme-color" content="#0b0b0d">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
 </head>
 <body class="app">
-    <header role="banner">
+    <header role="banner" class="site-header">
         <a href="index.html" class="brand">
             <span class="chip-mark"></span>
-            <span class="wordmark">LIVE<b>POKER</b></span>
+            <span class="wordmark"><span data-i18n="index.1">LIVE</span><b><span data-i18n="index.2">POKER</span></b></span>
         </a>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span id="connectionStatus" class="connection-status">Connecting…</span>
+        <nav role="navigation">
+            <a href="index.html"><span data-i18n="Tracker">Tracker</span></a>
+            <a href="about.html"><span data-i18n="index.3">About</span></a>
+            <a href="guide.html"><span data-i18n="index.4">Guide</span></a>
+            <a href="blog.html"><span data-i18n="index.5">Strategy</span></a>
+            <a href="connect.html" aria-current="page"><span data-i18n="index.6">Multiplayer</span></a>
+        </nav>
+    <div class="language-control"><label for="languageSelect">Language / 语言</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option></select></div>
+    </header>
+    <div class="room-bar">
+            <span id="connectionStatus" class="connection-status"><span data-i18n="multiplayer.3">Connecting…</span></span>
             <span id="roomInfo"></span>
-            <a href="connect.html" style="color:var(--muted);text-decoration:none;font-size:13px;font-weight:600">Change Room</a>
-            <a href="index.html" style="color:var(--muted);text-decoration:none;font-size:13px;font-weight:600">Single Device</a>
+            <a href="connect.html" style="color:var(--muted);text-decoration:none;font-size:13px;font-weight:600"><span data-i18n="multiplayer.4">Change Room</span></a>
+            <a href="index.html" style="color:var(--muted);text-decoration:none;font-size:13px;font-weight:600"><span data-i18n="multiplayer.5">Single Device</span></a>
             <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener"
                style="color:var(--primary);font-size:13px;text-decoration:none">☕</a>
         </div>
-    </header>
 
     <!-- Pot display -->
     <div id="potArea">
         <div id="potChip">
             <div id="pot">0</div>
-            <div class="pot-label">POT</div>
+            <div class="pot-label"><span data-i18n="multiplayer.6">POT</span></div>
         </div>
         <div id="gameStatus">
             <span id="streetName">—</span>
             <span class="status-dot">·</span>
-            <span>Bet: <strong id="currentBet">0</strong></span>
+            <span><span data-i18n="multiplayer.7">Bet:</span> <strong id="currentBet">0</strong></span>
         </div>
     </div>
 
     <!-- Whose turn -->
     <div id="toActBanner">
-        <span id="currentPlayerName"></span>'s turn
+        <span id="currentPlayerName"></span><span data-i18n="multiplayer.8">'s turn</span>
     </div>
 
     <!-- Players -->
@@ -67,48 +77,48 @@
     <!-- Setup -->
     <div id="setup">
         <div class="setup-row">
-            <input id="playerName" placeholder="Player name" autocomplete="off" aria-label="Player name">
-            <input id="playerStack" placeholder="Stack" type="number" value="1000" style="width:90px" aria-label="Starting stack">
-            <button id="addPlayer">Add</button>
+            <input id="playerName" placeholder="Player name" autocomplete="off" aria-label="Player name" data-i18n-attributes="{&quot;placeholder&quot;: &quot;multiplayer.9&quot;, &quot;aria-label&quot;: &quot;multiplayer.9&quot;}">
+            <input id="playerStack" placeholder="Stack" type="number" value="1000" style="width:90px" aria-label="Starting stack" data-i18n-attributes="{&quot;placeholder&quot;: &quot;multiplayer.10&quot;, &quot;aria-label&quot;: &quot;multiplayer.11&quot;}">
+            <button id="addPlayer"><span data-i18n="multiplayer.12">Add</span></button>
         </div>
         <div class="setup-row">
             <label class="toggle-label">
                 <input type="checkbox" id="enableBlinds">
-                <span>Blinds</span>
+                <span><span data-i18n="multiplayer.13">Blinds</span></span>
             </label>
             <div id="blindsControls" class="hidden">
-                <input id="smallBlind" type="number" value="5" style="width:58px" aria-label="Small blind">
+                <input id="smallBlind" type="number" value="5" style="width:58px" aria-label="Small blind" data-i18n-attributes="{&quot;aria-label&quot;: &quot;multiplayer.14&quot;}">
                 <span style="color:var(--muted)">/</span>
-                <input id="bigBlind" type="number" value="10" style="width:58px" aria-label="Big blind">
-                <button id="moveButton">Move BTN</button>
+                <input id="bigBlind" type="number" value="10" style="width:58px" aria-label="Big blind" data-i18n-attributes="{&quot;aria-label&quot;: &quot;multiplayer.15&quot;}">
+                <button id="moveButton"><span data-i18n="multiplayer.16">Move BTN</span></button>
             </div>
-            <button id="startRound" class="btn-start">Start Round</button>
-            <button id="reset">Reset</button>
+            <button id="startRound" class="btn-start"><span data-i18n="multiplayer.17">Start Round</span></button>
+            <button id="reset"><span data-i18n="multiplayer.18">Reset</span></button>
         </div>
     </div>
 
     <!-- Sticky action bar -->
     <div id="actionBar">
         <div id="amountRow">
-            <button id="amountDown" class="amt-btn" aria-label="Decrease amount">−</button>
-            <input id="amount" type="number" min="0" value="10" aria-label="Bet amount">
-            <button id="amountUp" class="amt-btn" aria-label="Increase amount">+</button>
-            <button class="preset" data-preset="min">Min</button>
-            <button class="preset" data-preset="half">½ Pot</button>
-            <button class="preset" data-preset="pot">Pot</button>
-            <button class="preset" data-preset="allin">All In</button>
+            <button id="amountDown" class="amt-btn" aria-label="Decrease amount" data-i18n-attributes="{&quot;aria-label&quot;: &quot;multiplayer.19&quot;}">−</button>
+            <input id="amount" type="number" min="0" value="10" aria-label="Bet amount" data-i18n-attributes="{&quot;aria-label&quot;: &quot;multiplayer.20&quot;}">
+            <button id="amountUp" class="amt-btn" aria-label="Increase amount" data-i18n-attributes="{&quot;aria-label&quot;: &quot;multiplayer.21&quot;}">+</button>
+            <button class="preset" data-preset="min"><span data-i18n="multiplayer.22">Min</span></button>
+            <button class="preset" data-preset="half"><span data-i18n="multiplayer.23">½ Pot</span></button>
+            <button class="preset" data-preset="pot"><span data-i18n="multiplayer.24">Pot</span></button>
+            <button class="preset" data-preset="allin"><span data-i18n="multiplayer.25">All In</span></button>
         </div>
         <div id="primaryActions">
-            <button id="foldBtn"  class="action-btn btn-fold">Fold</button>
-            <button id="checkBtn" class="action-btn btn-check">Check</button>
-            <button id="callBtn"  class="action-btn btn-call">Call</button>
-            <button id="betBtn"   class="action-btn btn-bet">Bet</button>
-            <button id="raiseBtn" class="action-btn btn-raise">Raise</button>
+            <button id="foldBtn"  class="action-btn btn-fold"><span data-i18n="multiplayer.26">Fold</span></button>
+            <button id="checkBtn" class="action-btn btn-check"><span data-i18n="multiplayer.27">Check</span></button>
+            <button id="callBtn"  class="action-btn btn-call"><span data-i18n="multiplayer.28">Call</span></button>
+            <button id="betBtn"   class="action-btn btn-bet"><span data-i18n="multiplayer.29">Bet</span></button>
+            <button id="raiseBtn" class="action-btn btn-raise"><span data-i18n="multiplayer.30">Raise</span></button>
         </div>
         <div id="adminActions">
-            <button id="nextBtn">Skip Turn</button>
-            <button id="advanceRoundBtn">Next Street</button>
-            <button id="emptyPotBtn">Award Pot 🏆</button>
+            <button id="nextBtn"><span data-i18n="multiplayer.31">Skip Turn</span></button>
+            <button id="advanceRoundBtn"><span data-i18n="multiplayer.32">Next Street</span></button>
+            <button id="emptyPotBtn"><span data-i18n="multiplayer.33">Award Pot 🏆</span></button>
         </div>
     </div>
 
@@ -117,16 +127,16 @@
     <!-- Award pot modal -->
     <div id="emptyPotModal" class="modal">
         <div class="modal-content">
-            <h2>Award Pot</h2>
+            <h2><span data-i18n="multiplayer.34">Award Pot</span></h2>
             <div class="pot-preview">
-                <span class="muted">Pot:</span>
+                <span class="muted"><span data-i18n="multiplayer.35">Pot:</span></span>
                 <span id="modalPotAmount" class="pot-amount">0</span>
             </div>
-            <label>Winner</label>
-            <select id="winnerSelect"><option value="">Choose a player…</option></select>
+            <label><span data-i18n="multiplayer.36">Winner</span></label>
+            <select id="winnerSelect"><option value="" data-i18n="multiplayer.37">Choose a player…</option></select>
             <div class="modal-buttons">
-                <button id="cancelEmptyPot">Cancel</button>
-                <button id="confirmEmptyPot" class="btn-award">Award 🏆</button>
+                <button id="cancelEmptyPot"><span data-i18n="multiplayer.38">Cancel</span></button>
+                <button id="confirmEmptyPot" class="btn-award"><span data-i18n="multiplayer.39">Award 🏆</span></button>
             </div>
         </div>
     </div>
@@ -200,7 +210,7 @@
         let _toastTimer;
         const toast = (msg, type = '') => {
             const el = $('toast');
-            el.textContent = msg;
+            I18n.remember(el, msg);
             el.className = 'show' + (type ? ' toast-' + type : '');
             clearTimeout(_toastTimer);
             _toastTimer = setTimeout(() => { el.className = ''; }, 3000);
@@ -230,7 +240,7 @@
         const render = () => {
             animateNumber(els.pot, state.pot);
             animateNumber(els.currentBet, state.currentBet);
-            els.streetName.textContent = state.street ? state.street.toUpperCase() : '—';
+            els.streetName.textContent = I18n.t(({ preflop: 'Preflop', flop: 'Flop', turn: 'Turn', river: 'River', showdown: 'Showdown' })[state.street] || '—');
 
             const curP = state.roundActive && state.players.length > 0
                 ? state.players[state.currentPlayerIndex] : null;
@@ -242,7 +252,7 @@
 
             if (curP) {
                 const toCall = Math.min(state.currentBet - curP.bet, curP.stack);
-                $('callBtn').textContent = toCall > 0 ? `Call ${toCall}` : 'Call';
+                $('callBtn').textContent = toCall > 0 ? I18n.t('Call {amount}', { amount: toCall }) : I18n.t('Call');
             }
 
             // Player tiles
@@ -254,12 +264,12 @@
                 const isBB  = n >= 2 && i === (state.buttonPosition + (n === 2 ? 1 : 2)) % n;
                 const isMe  = p.name === myNickname;
                 const badges = [
-                    isBtn ? '<span class="badge badge-btn">BTN</span>' : '',
-                    isSB  ? '<span class="badge badge-sb">SB</span>'  : '',
-                    isBB  ? '<span class="badge badge-bb">BB</span>'  : '',
-                    isMe  ? '<span class="badge badge-me">YOU</span>' : ''
+                    isBtn ? `<span class="badge badge-btn">${I18n.t('BTN')}</span>` : '',
+                    isSB  ? `<span class="badge badge-sb">${I18n.t('SB')}</span>`  : '',
+                    isBB  ? `<span class="badge badge-bb">${I18n.t('BB')}</span>`  : '',
+                    isMe  ? `<span class="badge badge-me">${I18n.t('YOU')}</span>` : ''
                 ].join('');
-                const sub = p.folded ? 'FOLDED' : (p.bet > 0 ? `bet: ${p.bet}` : '');
+                const sub = p.folded ? I18n.t('FOLDED') : (p.bet > 0 ? I18n.t('bet: {amount}', { amount: p.bet }) : '');
                 return `<div class="player${isActive ? ' active' : ''}${p.folded ? ' folded' : ''}">
                     <div class="player-top">
                         <span class="player-name">${p.name}</span>
@@ -301,10 +311,10 @@
         const addPlayer = () => {
             const name = els.playerName.value.trim().substring(0, CONFIG.MAX_NAME_LENGTH);
             const stack = parseInt(els.playerStack.value) || CONFIG.DEFAULT_STACK;
-            if (!name) return toast('Please enter a player name', 'error');
-            if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) return toast('Name can only contain letters, numbers, spaces, - and _', 'error');
-            if (state.players.length >= CONFIG.MAX_PLAYERS) return toast(`Maximum ${CONFIG.MAX_PLAYERS} players`, 'error');
-            if (stack <= 0 || isNaN(stack)) return toast('Please enter a valid stack amount', 'error');
+            if (!name) return toast(I18n.t('Please enter a player name'), 'error');
+            if (!/^[\p{Script=Han}a-zA-Z0-9\s\-_]+$/u.test(name)) return toast(I18n.t('Name can only contain Chinese characters, letters, numbers, spaces, - and _'), 'error');
+            if (state.players.length >= CONFIG.MAX_PLAYERS) return toast(I18n.t('Maximum {count} players', { count: CONFIG.MAX_PLAYERS }), 'error');
+            if (stack <= 0 || isNaN(stack)) return toast(I18n.t('Please enter a valid stack amount'), 'error');
             state.players.push({ name, stack, bet: 0, folded: false });
             els.playerName.value = '';
             render(); syncState();
@@ -326,7 +336,7 @@
             if (state.street === 'showdown') {
                 state.toAct = [];
                 render(); syncState();
-                toast('Showdown — award the pot', 'win');
+                toast(I18n.t('Showdown — award the pot'), 'win');
                 return;
             }
 
@@ -353,9 +363,9 @@
         };
 
         const startRound = () => {
-            if (state.players.length < CONFIG.MIN_PLAYERS) return toast(`Need at least ${CONFIG.MIN_PLAYERS} players`, 'error');
+            if (state.players.length < CONFIG.MIN_PLAYERS) return toast(I18n.t('Need at least {count} players', { count: CONFIG.MIN_PLAYERS }), 'error');
             if (state.players.filter(p => p.stack > 0).length < CONFIG.MIN_PLAYERS)
-                return toast('Not enough players with chips', 'error');
+                return toast(I18n.t('Not enough players with chips'), 'error');
             state.roundActive = true; state.pot = 0; state.street = 'preflop';
             state.toAct = []; state.sidePots = [];
             const n = state.players.length;
@@ -390,10 +400,10 @@
         const bet = () => {
             if (!state.roundActive) return;
             const amount = parseInt(els.amount.value);
-            if (isNaN(amount) || amount <= 0) return toast('Please enter a valid bet amount', 'error');
+            if (isNaN(amount) || amount <= 0) return toast(I18n.t('Please enter a valid bet amount'), 'error');
             const p = state.players[state.currentPlayerIndex];
-            if (state.currentBet > 0) return toast('There is already a bet — use Raise instead', 'error');
-            if (amount > p.stack) return toast('Not enough chips', 'error');
+            if (state.currentBet > 0) return toast(I18n.t('There is already a bet — use Raise instead'), 'error');
+            if (amount > p.stack) return toast(I18n.t('Not enough chips'), 'error');
             p.stack -= amount; p.bet += amount; state.pot += amount;
             state.currentBet = p.bet; state.minRaise = amount;
             rebuildToAct(state.currentPlayerIndex);
@@ -403,13 +413,13 @@
         const raise = () => {
             if (!state.roundActive) return;
             const raiseAmount = parseInt(els.amount.value);
-            if (isNaN(raiseAmount) || raiseAmount <= 0) return toast('Please enter a valid raise amount', 'error');
+            if (isNaN(raiseAmount) || raiseAmount <= 0) return toast(I18n.t('Please enter a valid raise amount'), 'error');
             if (state.minRaise > 0 && raiseAmount < state.minRaise)
-                return toast(`Minimum raise is ${state.minRaise}`, 'error');
+                return toast(I18n.t('Minimum raise is {amount}', { amount: state.minRaise }), 'error');
             const p = state.players[state.currentPlayerIndex];
             const toCall = state.currentBet - p.bet;
             const needed = toCall + raiseAmount;
-            if (needed > p.stack) return toast('Not enough chips', 'error');
+            if (needed > p.stack) return toast(I18n.t('Not enough chips'), 'error');
             p.stack -= needed; p.bet += needed; state.pot += needed;
             const prev = state.currentBet;
             state.currentBet = p.bet; state.minRaise = p.bet - prev;
@@ -429,7 +439,7 @@
         const check = () => {
             if (!state.roundActive) return;
             if (state.players[state.currentPlayerIndex].bet < state.currentBet)
-                return toast('Cannot check — must call or fold', 'error');
+                return toast(I18n.t('Cannot check — must call or fold'), 'error');
             state.toAct = state.toAct.filter(i => i !== state.currentPlayerIndex);
             nextPlayer();
         };
@@ -449,7 +459,7 @@
                     const winAmt = state.pot;
                     winner.stack += winAmt;
                     endRound();
-                    toast(`${winner.name} wins ${winAmt}!`, 'win');
+                    toast(I18n.t('{name} wins {amount}!', { name: winner.name, amount: winAmt }), 'win');
                 }
                 return;
             }
@@ -479,10 +489,10 @@
         };
 
         const openEmptyPotModal = () => {
-            if (state.pot === 0) return toast('The pot is already empty!', 'error');
-            if (!state.players.length) return toast('No players at the table!', 'error');
+            if (state.pot === 0) return toast(I18n.t('The pot is already empty!'), 'error');
+            if (!state.players.length) return toast(I18n.t('No players at the table!'), 'error');
             els.modalPotAmount.textContent = state.pot;
-            els.winnerSelect.innerHTML = '<option value="">Choose a player…</option>' +
+            els.winnerSelect.innerHTML = `<option value="">${I18n.t('Choose a player…')}</option>` +
                 state.players.map((p, i) => `<option value="${i}">${p.name} (${p.stack.toLocaleString()})</option>`).join('');
             els.emptyPotModal.classList.add('active');
         };
@@ -494,14 +504,14 @@
 
         const awardPotToPlayer = () => {
             const idx = els.winnerSelect.value;
-            if (idx === '') return toast('Please select a player!', 'error');
+            if (idx === '') return toast(I18n.t('Please select a player!'), 'error');
             const winner = state.players[parseInt(idx)]; const amt = state.pot;
             els.pot.style.animation = 'potCollect .5s ease-out';
             setTimeout(() => {
                 winner.stack += amt;
                 closeEmptyPotModal(); els.pot.style.animation = '';
                 endRound();
-                toast(`${winner.name} wins ${amt}!`, 'win');
+                toast(I18n.t('{name} wins {amount}!', { name: winner.name, amount: amt }), 'win');
             }, 500);
         };
 
@@ -521,7 +531,7 @@
 
         const setStatus = (text, color = 'var(--muted)') => {
             const el = $('connectionStatus');
-            el.textContent = text;
+            I18n.remember(el, text);
             el.style.color = color;
             el.style.borderColor = color === 'var(--muted)' ? 'var(--border)' : color;
         };
@@ -530,7 +540,7 @@
             isHost = true; hasJoined = true; myNickname = storedName; roomCode = storedRoom;
             state.players = [{ name: myNickname, stack: 1000, bet: 0, folded: false }];
             state.currentPlayerIndex = 0;
-            setStatus('Creating room…');
+            setStatus(I18n.t('Creating room…'));
 
             peer = new Peer('poker-' + roomCode, {
                 debug: 2,
@@ -543,14 +553,14 @@
 
             const hostTimeout = setTimeout(() => {
                 if (!peer || !peer.open) {
-                    setStatus('Connection failed', 'var(--red)');
-                    toast('Failed to connect to PeerJS server. Please refresh and try again.', 'error');
+                    setStatus(I18n.t('Connection failed'), 'var(--red)');
+                    toast(I18n.t('Failed to connect to PeerJS server. Please refresh and try again.'), 'error');
                 }
             }, 10000);
 
             peer.on('open', id => {
                 clearTimeout(hostTimeout);
-                setStatus('✓ Room Active', 'var(--green)');
+                setStatus(I18n.t('✓ Room Active'), 'var(--green)');
                 console.log('Host ready, room:', roomCode);
             });
 
@@ -579,7 +589,7 @@
             });
 
             peer.on('error', err => {
-                setStatus('Error: ' + err.type, 'var(--red)');
+                setStatus(I18n.t('Error: {type}', { type: err.type }), 'var(--red)');
             });
 
             render();
@@ -587,7 +597,7 @@
 
         const joinGame = () => {
             hasJoined = true; myNickname = storedName; roomCode = storedRoom;
-            setStatus('Connecting…');
+            setStatus(I18n.t('Connecting…'));
 
             peer = new Peer({
                 debug: 2,
@@ -599,7 +609,7 @@
             });
 
             peer.on('open', () => {
-                setStatus('Finding room…');
+                setStatus(I18n.t('Finding room…'));
                 setTimeout(() => {
                     const conn = peer.connect('poker-' + roomCode, { reliable: true });
                     connections.push(conn);
@@ -607,14 +617,14 @@
 
                     const timeout = setTimeout(() => {
                         if (!connected) {
-                            setStatus('Connection failed', 'var(--red)');
-                            toast('Could not connect to room. Make sure the host has opened their game first.', 'error');
+                            setStatus(I18n.t('Connection failed'), 'var(--red)');
+                            toast(I18n.t('Could not connect to room. Make sure the host has opened their game first.'), 'error');
                         }
                     }, 15000);
 
                     conn.on('open', () => {
                         connected = true; clearTimeout(timeout);
-                        setStatus('✓ Connected', 'var(--green)');
+                        setStatus(I18n.t('✓ Connected'), 'var(--green)');
                         conn.send({ type: 'join', playerName: myNickname });
                     });
 
@@ -623,22 +633,22 @@
                     });
 
                     conn.on('close', () => {
-                        setStatus('Disconnected', 'var(--red)');
-                        toast('Disconnected from room.', 'error');
+                        setStatus(I18n.t('Disconnected'), 'var(--red)');
+                        toast(I18n.t('Disconnected from room.'), 'error');
                     });
 
                     conn.on('error', err => {
                         connected = true; clearTimeout(timeout);
-                        setStatus('Error', 'var(--red)');
-                        toast('Failed to connect to room.', 'error');
+                        setStatus(I18n.t('Error'), 'var(--red)');
+                        toast(I18n.t('Failed to connect to room.'), 'error');
                     });
                 }, 2000);
             });
 
             peer.on('error', err => {
-                setStatus('Error: ' + err.type, 'var(--red)');
+                setStatus(I18n.t('Error: {type}', { type: err.type }), 'var(--red)');
                 if (err.type === 'peer-unavailable')
-                    toast('Room not found! Make sure the host opened their game first.', 'error');
+                    toast(I18n.t('Room not found! Make sure the host opened their game first.'), 'error');
             });
         };
 
@@ -685,6 +695,16 @@
         else if (storedRole === 'client') joinGame();
 
         render();
-    </script>
+
+        // Repaint display copy only; keep the hand, inputs and modal selections.
+        document.addEventListener('languagechange', () => {
+            render();
+            if (els.emptyPotModal.classList.contains('active')) {
+                const selected = [...els.emptyPotModal.querySelectorAll('select')].map(el => el.value);
+                openEmptyPotModal();
+                els.emptyPotModal.querySelectorAll('select').forEach((el, i) => { el.value = selected[i] || ''; });
+            }
+        });
+</script>
 </body>
 </html>

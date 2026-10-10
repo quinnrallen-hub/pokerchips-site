@@ -14,24 +14,24 @@
     </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Live Poker Tracker - Free Online Poker Chip Counter & Game Manager</title>
-    <meta name="description" content="Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games, tournaments, and cash games. Track pots, bets, and player stacks in real-time.">
-    <meta name="keywords" content="poker tracker, poker chip counter, poker game tracker, home poker game, poker tournament tracker, texas holdem tracker, free poker app">
+    <title data-i18n="index.0">Live Poker Tracker - Free Online Poker Chip Counter & Game Manager</title>
+    <meta name="description" content="Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games, tournaments, and cash games. Track pots, bets, and player stacks in real-time." data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.description&quot;}">
+    <meta name="keywords" content="poker tracker, poker chip counter, poker game tracker, home poker game, poker tournament tracker, texas holdem tracker, free poker app" data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.keywords&quot;}">
     <meta name="author" content="Live Poker Chips">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://livepokerchips.com/">
-    <meta property="og:title" content="Live Poker Tracker - Free Online Poker Chip Counter">
-    <meta property="og:description" content="Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games and tournaments.">
+    <meta property="og:title" content="Live Poker Tracker - Free Online Poker Chip Counter" data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.og:title&quot;}">
+    <meta property="og:description" content="Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games and tournaments." data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.og:description&quot;}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://livepokerchips.com/">
     <meta property="og:image" content="https://livepokerchips.com/icon-512.png">
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
-    <meta property="og:site_name" content="Live Poker Chips">
-    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="Live Poker Chips" data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.og:site_name&quot;}">
+    <meta property="og:locale" content="en_US" data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.og:locale&quot;}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Live Poker Tracker - Free Online Poker Chip Counter">
-    <meta name="twitter:description" content="Free online poker tracker for managing chips, blinds, and game state.">
+    <meta name="twitter:title" content="Live Poker Tracker - Free Online Poker Chip Counter" data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.twitter:title&quot;}">
+    <meta name="twitter:description" content="Free online poker tracker for managing chips, blinds, and game state." data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.twitter:description&quot;}">
     <meta name="twitter:image" content="https://livepokerchips.com/icon-512.png">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -77,6 +77,13 @@
         .btn-rebuy:hover  { background: rgba(95,207,142,.2); }
         .btn-remove:hover { background: rgba(236,106,106,.18); }
 
+        button.player-name {
+            background: transparent; border: 0; padding: 2px 0;
+            text-align: left; cursor: pointer;
+        }
+        button.player-name:hover { color: var(--gold); }
+        #renamePlayerName { width: 100%; margin-bottom: 18px; }
+
         /* Hand history */
         #handHistory { margin: 0 16px 8px; border-radius: 10px; overflow: hidden; }
         #handHistory.hidden { display: none; }
@@ -102,8 +109,8 @@
     </style>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Poker Tracker">
-    <script type="application/ld+json">
+    <meta name="apple-mobile-web-app-title" content="Poker Tracker" data-i18n-attributes="{&quot;content&quot;: &quot;index.meta.apple-mobile-web-app-title&quot;}">
+    <script type="application/ld+json" data-i18n-schema="{&quot;Live Poker Tracker&quot;: &quot;Live Poker Tracker&quot;, &quot;Live Poker Chips&quot;: &quot;Live Poker Chips&quot;, &quot;Free online poker chip tracker for managing Texas Hold&#x27;em home games. Track stacks, blinds, pots, and betting rounds in real-time with multiplayer sync.&quot;: &quot;Free online poker chip tracker for managing Texas Hold&#x27;em home games. Track stacks, blinds, pots, and betting rounds in real-time with multiplayer sync.&quot;, &quot;Requires a modern web browser with JavaScript enabled&quot;: &quot;Requires a modern web browser with JavaScript enabled&quot;, &quot;Chip stack tracking&quot;: &quot;Chip stack tracking&quot;, &quot;Blinds management&quot;: &quot;Blinds management&quot;, &quot;Pot calculation&quot;: &quot;Pot calculation&quot;, &quot;Multiplayer P2P sync&quot;: &quot;Multiplayer P2P sync&quot;, &quot;Offline PWA support&quot;: &quot;Offline PWA support&quot;, &quot;Any&quot;: &quot;Any&quot;}">
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
@@ -123,49 +130,53 @@
         "publisher": { "@type": "Organization", "name": "Live Poker Chips", "url": "https://livepokerchips.com" }
     }
     </script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
 </head>
 <body class="app">
-    <header role="banner">
+    <header role="banner" class="site-header">
         <a href="index.html" class="brand">
             <span class="chip-mark"></span>
-            <span class="wordmark">LIVE<b>POKER</b></span>
+            <span class="wordmark"><span data-i18n="index.1">LIVE</span><b><span data-i18n="index.2">POKER</span></b></span>
         </a>
         <nav role="navigation">
-            <a href="about.html">About</a>
-            <a href="guide.html">Guide</a>
-            <a href="blog.html">Strategy</a>
-            <a href="connect.html" class="btn-mp">Multiplayer</a>
+            <a href="index.html" aria-current="page"><span data-i18n="Tracker">Tracker</span></a>
+            <a href="about.html"><span data-i18n="index.3">About</span></a>
+            <a href="guide.html"><span data-i18n="index.4">Guide</span></a>
+            <a href="blog.html"><span data-i18n="index.5">Strategy</span></a>
+            <a href="connect.html"><span data-i18n="index.6">Multiplayer</span></a>
         </nav>
+    <div class="language-control"><label for="languageSelect">Language / 语言</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option></select></div>
     </header>
 
-    <h1 class="sr-only">Live Poker Tracker — Free Online Poker Chip Counter & Game Manager</h1>
+    <h1 class="sr-only"><span data-i18n="index.7">Live Poker Tracker — Free Online Poker Chip Counter & Game Manager</span></h1>
 
     <div class="support-bar">
-        Enjoying this? <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener">Support development</a>
+        <span data-i18n="index.8">Enjoying this?</span> <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener"><span data-i18n="index.9">Support development</span></a>
     </div>
 
     <!-- Pot display -->
     <div id="potArea">
         <div id="potChip">
             <div id="pot">0</div>
-            <div class="pot-label">POT</div>
+            <div class="pot-label"><span data-i18n="index.10">POT</span></div>
         </div>
         <div id="gameStatus">
             <span id="streetName">—</span>
             <span class="status-dot">·</span>
-            <span>Bet <strong id="currentBet">0</strong></span>
+            <span><span data-i18n="index.11">Bet</span> <strong id="currentBet">0</strong></span>
         </div>
     </div>
 
     <!-- Tournament timer -->
     <div id="timerDisplay" class="hidden">
-        <span id="timerLevel">Level 1</span>
+        <span id="timerLevel"><span data-i18n="index.12">Level 1</span></span>
         <span id="timerCountdown" class="mono tnum">20:00</span>
     </div>
 
     <!-- Whose turn -->
     <div id="toActBanner">
-        <span id="currentPlayerName"></span> to act
+        <span id="currentPlayerName"></span> <span data-i18n="index.13">to act</span>
     </div>
 
     <!-- Players -->
@@ -173,40 +184,40 @@
 
     <!-- Hand history -->
     <details id="handHistory" class="hidden">
-        <summary>Hand History</summary>
+        <summary><span data-i18n="index.14">Hand History</span></summary>
         <div id="historyList"></div>
     </details>
 
     <!-- Setup -->
     <div id="setup">
         <div class="setup-row">
-            <input id="playerName" placeholder="Player name" autocomplete="off" aria-label="Player name" style="flex:1;min-width:120px">
-            <input id="playerStack" class="mono" placeholder="Stack" type="number" value="1000" style="width:96px" aria-label="Starting stack">
-            <button id="addPlayer">Add</button>
+            <input id="playerName" placeholder="Player name" autocomplete="off" aria-label="Player name" style="flex:1;min-width:120px" data-i18n-attributes="{&quot;placeholder&quot;: &quot;index.15&quot;, &quot;aria-label&quot;: &quot;index.15&quot;}">
+            <input id="playerStack" class="mono" placeholder="Stack" type="number" value="1000" style="width:96px" aria-label="Starting stack" data-i18n-attributes="{&quot;placeholder&quot;: &quot;index.16&quot;, &quot;aria-label&quot;: &quot;index.17&quot;}">
+            <button id="addPlayer"><span data-i18n="index.18">Add</span></button>
         </div>
         <div class="setup-row">
             <label class="toggle-label">
                 <input type="checkbox" id="enableBlinds">
-                <span>Blinds</span>
+                <span><span data-i18n="index.19">Blinds</span></span>
             </label>
             <div id="blindsControls" class="hidden">
-                <input id="smallBlind" class="mono" type="number" value="5" style="width:60px" aria-label="Small blind">
+                <input id="smallBlind" class="mono" type="number" value="5" style="width:60px" aria-label="Small blind" data-i18n-attributes="{&quot;aria-label&quot;: &quot;index.20&quot;}">
                 <span style="color:var(--faint)">/</span>
-                <input id="bigBlind" class="mono" type="number" value="10" style="width:60px" aria-label="Big blind">
-                <button id="moveButton">Move BTN</button>
+                <input id="bigBlind" class="mono" type="number" value="10" style="width:60px" aria-label="Big blind" data-i18n-attributes="{&quot;aria-label&quot;: &quot;index.21&quot;}">
+                <button id="moveButton"><span data-i18n="index.22">Move BTN</span></button>
             </div>
-            <button id="startRound" class="btn-start">Start Round</button>
-            <button id="reset">Reset</button>
+            <button id="startRound" class="btn-start"><span data-i18n="index.23">Start Round</span></button>
+            <button id="reset"><span data-i18n="index.24">Reset</span></button>
         </div>
         <div class="setup-row">
             <label class="toggle-label">
                 <input type="checkbox" id="enableTournament">
-                <span>Tournament</span>
+                <span><span data-i18n="index.25">Tournament</span></span>
             </label>
             <div id="tournamentControls" class="hidden">
-                <input id="levelMinutes" class="mono" type="number" value="20" min="1" style="width:52px" aria-label="Minutes per level">
-                <span style="color:var(--faint);font-size:12px">min/lvl</span>
-                <button id="timerBtn">Start Timer</button>
+                <input id="levelMinutes" class="mono" type="number" value="20" min="1" style="width:52px" aria-label="Minutes per level" data-i18n-attributes="{&quot;aria-label&quot;: &quot;index.26&quot;}">
+                <span style="color:var(--faint);font-size:12px"><span data-i18n="index.27">min/lvl</span></span>
+                <button id="timerBtn"><span data-i18n="index.28">Start Timer</span></button>
             </div>
         </div>
     </div>
@@ -214,26 +225,26 @@
     <!-- Sticky action bar -->
     <div id="actionBar">
         <div id="amountRow">
-            <button id="amountDown" class="amt-btn" aria-label="Decrease amount">−</button>
-            <input id="amount" class="mono" type="number" min="0" value="10" aria-label="Bet amount">
-            <button id="amountUp" class="amt-btn" aria-label="Increase amount">+</button>
-            <button class="preset" data-preset="min">Min</button>
+            <button id="amountDown" class="amt-btn" aria-label="Decrease amount" data-i18n-attributes="{&quot;aria-label&quot;: &quot;index.29&quot;}">−</button>
+            <input id="amount" class="mono" type="number" min="0" value="10" aria-label="Bet amount" data-i18n-attributes="{&quot;aria-label&quot;: &quot;index.30&quot;}">
+            <button id="amountUp" class="amt-btn" aria-label="Increase amount" data-i18n-attributes="{&quot;aria-label&quot;: &quot;index.31&quot;}">+</button>
+            <button class="preset" data-preset="min"><span data-i18n="index.32">Min</span></button>
             <button class="preset" data-preset="half">½</button>
             <button class="preset" data-preset="twothirds">⅔</button>
-            <button class="preset" data-preset="pot">Pot</button>
-            <button class="preset" data-preset="allin">All In</button>
+            <button class="preset" data-preset="pot"><span data-i18n="index.33">Pot</span></button>
+            <button class="preset" data-preset="allin"><span data-i18n="index.34">All In</span></button>
         </div>
         <div id="primaryActions">
-            <button id="foldBtn"  class="action-btn btn-fold">Fold</button>
-            <button id="checkBtn" class="action-btn btn-check">Check</button>
-            <button id="callBtn"  class="action-btn btn-call">Call</button>
-            <button id="betBtn"   class="action-btn btn-bet">Bet</button>
-            <button id="raiseBtn" class="action-btn btn-raise">Raise</button>
+            <button id="foldBtn"  class="action-btn btn-fold"><span data-i18n="index.35">Fold</span></button>
+            <button id="checkBtn" class="action-btn btn-check"><span data-i18n="index.36">Check</span></button>
+            <button id="callBtn"  class="action-btn btn-call"><span data-i18n="index.37">Call</span></button>
+            <button id="betBtn"   class="action-btn btn-bet"><span data-i18n="index.11">Bet</span></button>
+            <button id="raiseBtn" class="action-btn btn-raise"><span data-i18n="index.38">Raise</span></button>
         </div>
         <div id="adminActions">
-            <button id="nextBtn">Skip Turn</button>
-            <button id="advanceRoundBtn">Next Street</button>
-            <button id="emptyPotBtn">Award Pot</button>
+            <button id="nextBtn"><span data-i18n="index.39">Skip Turn</span></button>
+            <button id="advanceRoundBtn"><span data-i18n="index.40">Next Street</span></button>
+            <button id="emptyPotBtn"><span data-i18n="index.41">Award Pot</span></button>
         </div>
     </div>
 
@@ -242,21 +253,34 @@
     <!-- Award pot modal -->
     <div id="emptyPotModal" class="modal">
         <div class="modal-content">
-            <h2>Award Pot</h2>
+            <h2><span data-i18n="index.41">Award Pot</span></h2>
             <!-- Single pot (no all-ins) -->
             <div id="singlePotRow">
                 <div class="pot-preview">
-                    <span class="muted">Pot</span>
+                    <span class="muted"><span data-i18n="index.33">Pot</span></span>
                     <span id="modalPotAmount" class="pot-amount mono">0</span>
                 </div>
-                <label>Winner</label>
-                <select id="winnerSelect"><option value="">Choose a player…</option></select>
+                <label><span data-i18n="index.42">Winner</span></label>
+                <select id="winnerSelect"><option value="" data-i18n="index.43">Choose a player…</option></select>
             </div>
             <!-- Side pots (all-in players present) -->
             <div id="potSelectorContainer" class="hidden"></div>
             <div class="modal-buttons">
-                <button id="cancelEmptyPot">Cancel</button>
-                <button id="confirmEmptyPot" class="btn-award">Award</button>
+                <button id="cancelEmptyPot"><span data-i18n="index.44">Cancel</span></button>
+                <button id="confirmEmptyPot" class="btn-award"><span data-i18n="index.45">Award</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename player modal -->
+    <div id="renamePlayerModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="renamePlayerTitle">
+        <div class="modal-content">
+            <h2 id="renamePlayerTitle" data-i18n="Rename player">Rename player</h2>
+            <label for="renamePlayerName" data-i18n="Player name (up to 20 characters)">Player name (up to 20 characters)</label>
+            <input id="renamePlayerName" type="text" maxlength="20" autocomplete="off">
+            <div class="modal-buttons">
+                <button id="cancelRename" data-i18n="Cancel">Cancel</button>
+                <button id="confirmRename" class="btn-start" data-i18n="Save name">Save name</button>
             </div>
         </div>
     </div>
@@ -264,16 +288,16 @@
     <!-- Rebuy modal -->
     <div id="rebuyModal" class="modal">
         <div class="modal-content">
-            <h2>Rebuy</h2>
+            <h2><span data-i18n="index.46">Rebuy</span></h2>
             <div class="pot-preview">
-                <span class="muted">Player</span>
+                <span class="muted"><span data-i18n="index.47">Player</span></span>
                 <span id="rebuyPlayerLabel" style="font-weight:700;color:var(--text)"></span>
             </div>
-            <label>Amount</label>
+            <label><span data-i18n="index.48">Amount</span></label>
             <input id="rebuyAmount" class="mono" type="number" min="1" value="1000" style="width:100%">
             <div class="modal-buttons">
-                <button id="cancelRebuy">Cancel</button>
-                <button id="confirmRebuy" class="btn-start">Rebuy</button>
+                <button id="cancelRebuy"><span data-i18n="index.44">Cancel</span></button>
+                <button id="confirmRebuy" class="btn-start"><span data-i18n="index.46">Rebuy</span></button>
             </div>
         </div>
     </div>
@@ -299,6 +323,7 @@
         };
 
         let _rebuyPlayerIdx = -1, _timerInterval = null, _saveTimer = null;
+        let _renamePlayerIdx = -1;
 
         const $ = id => document.getElementById(id);
         const els = {
@@ -316,7 +341,7 @@
         let _toastTimer;
         const toast = (msg, type = '') => {
             const el = $('toast');
-            el.textContent = msg;
+            I18n.remember(el, msg);
             el.className = 'show' + (type ? ' toast-' + type : '');
             clearTimeout(_toastTimer);
             _toastTimer = setTimeout(() => { el.className = ''; }, 3500);
@@ -369,9 +394,10 @@
 
         const syncTimerDisplay = () => {
             const t = state.tournament;
+            $('timerBtn').textContent = I18n.t(t.active ? 'Stop Timer' : 'Start Timer');
             if (!t.active) { $('timerDisplay').classList.add('hidden'); return; }
             $('timerDisplay').classList.remove('hidden');
-            $('timerLevel').textContent = `Level ${t.level}`;
+            $('timerLevel').textContent = I18n.t('Level {level}', { level: t.level });
             $('timerCountdown').textContent = formatTime(t.secondsLeft);
             $('timerCountdown').classList.toggle('timer-urgent', t.secondsLeft <= 60 && t.secondsLeft > 0);
         };
@@ -385,7 +411,7 @@
             state.tournament.level++;
             state.tournament.sb = parseInt(els.smallBlind.value);
             state.tournament.bb = parseInt(els.bigBlind.value);
-            toast(`Level ${state.tournament.level} — Blinds ${els.smallBlind.value}/${els.bigBlind.value}`, 'win');
+            toast(I18n.t('Level {level} — Blinds {small}/{big}', { level: state.tournament.level, small: els.smallBlind.value, big: els.bigBlind.value }), 'win');
         };
 
         const runTimerTick = () => {
@@ -406,7 +432,7 @@
             t.active = true;
             t.levelMinutes = parseInt($('levelMinutes').value) || 20;
             t.secondsLeft = t.levelMinutes * 60;
-            $('timerBtn').textContent = 'Stop Timer';
+            $('timerBtn').textContent = I18n.t('Stop Timer');
             syncTimerDisplay();
             _timerInterval = setInterval(runTimerTick, 1000);
         };
@@ -414,13 +440,13 @@
         const stopTimer = () => {
             clearInterval(_timerInterval); _timerInterval = null;
             state.tournament.active = false;
-            $('timerBtn').textContent = 'Start Timer';
+            $('timerBtn').textContent = I18n.t('Start Timer');
             syncTimerDisplay();
         };
 
         const resumeTimer = () => {
             if (!state.tournament.active) return;
-            $('timerBtn').textContent = 'Stop Timer';
+            $('timerBtn').textContent = I18n.t('Stop Timer');
             $('levelMinutes').value = state.tournament.levelMinutes;
             _timerInterval = setInterval(runTimerTick, 1000);
             syncTimerDisplay();
@@ -448,7 +474,7 @@
         const render = () => {
             animateNumber(els.pot, state.pot);
             animateNumber(els.currentBet, state.currentBet);
-            els.streetName.textContent = state.street ? state.street.toUpperCase() : '—';
+            els.streetName.textContent = I18n.t(({ preflop: 'Preflop', flop: 'Flop', turn: 'Turn', river: 'River', showdown: 'Showdown' })[state.street] || '—');
 
             const atShowdown = state.street === 'showdown';
             const curP = state.roundActive ? state.players[state.currentPlayerIndex] : null;
@@ -457,7 +483,7 @@
             if (curP) {
                 els.currentPlayerName.textContent = curP.name;
                 const toCall = Math.min(state.currentBet - curP.bet, curP.stack);
-                $('callBtn').textContent = `Call ${toCall}`;
+                $('callBtn').textContent = I18n.t('Call {amount}', { amount: toCall });
             }
 
             const n = state.players.length;
@@ -467,19 +493,19 @@
                 const isSB  = n >= 3 && i === (state.buttonPosition + 1) % n;
                 const isBB  = n >= 2 && i === (state.buttonPosition + (n === 2 ? 1 : 2)) % n;
                 const badges = [
-                    isBtn ? '<span class="badge badge-btn">BTN</span>' : '',
-                    isSB  ? '<span class="badge badge-sb">SB</span>'  : '',
-                    isBB  ? '<span class="badge badge-bb">BB</span>'  : ''
+                    isBtn ? `<span class="badge badge-btn">${I18n.t('BTN')}</span>` : '',
+                    isSB  ? `<span class="badge badge-sb">${I18n.t('SB')}</span>`  : '',
+                    isBB  ? `<span class="badge badge-bb">${I18n.t('BB')}</span>`  : ''
                 ].join('');
-                const sub = p.folded ? 'folded' : p.stack === 0 ? 'all-in' : p.bet > 0 ? `bet ${p.bet}` : '';
-                const canAct = p.stack === 0 && !state.roundActive;
+                const sub = p.folded ? I18n.t('FOLDED') : p.stack === 0 ? I18n.t('ALL IN') : p.bet > 0 ? I18n.t('bet: {amount}', { amount: p.bet }) : '';
+                const canAct = !state.roundActive;
                 const actions = canAct ? `<div class="player-action-row">
-                    <button class="player-action-btn btn-rebuy" data-action="rebuy" data-idx="${i}">Rebuy</button>
-                    <button class="player-action-btn btn-remove" data-action="remove" data-idx="${i}">Remove</button>
+                    ${p.stack === 0 ? `<button class="player-action-btn btn-rebuy" data-action="rebuy" data-idx="${i}">${I18n.t('Rebuy')}</button>` : ''}
+                    <button class="player-action-btn btn-remove" data-action="remove" data-idx="${i}">${I18n.t('Remove')}</button>
                 </div>` : '';
                 return `<div class="player${isActive ? ' active' : ''}${p.folded ? ' folded' : ''}${p.stack === 0 && !p.folded ? ' allin' : ''}">
                     <div class="player-top">
-                        <span class="player-name">${p.name}</span>
+                        <button type="button" class="player-name" data-action="rename" data-idx="${i}" title="${I18n.t('Rename')}" aria-label="${I18n.t('Rename {name}', { name: p.name })}">${p.name}</button>
                         <span class="player-badges">${badges}</span>
                     </div>
                     <div class="player-stack-row">
@@ -496,7 +522,7 @@
             if (state.handHistory.length > 0) {
                 histEl.classList.remove('hidden');
                 $('historyList').innerHTML = [...state.handHistory].reverse().map(h =>
-                    `<div class="history-entry">Hand ${h.hand}: <strong>${h.winner}</strong> wins <span class="mono">${h.amount}</span></div>`
+                    `<div class="history-entry">${I18n.t('Hand {hand}:', { hand: h.hand })} <strong>${h.winner.split(/ & |、/).join(I18n.language === 'zh-CN' ? '、' : ' & ')}</strong> ${I18n.t('wins')} <span class="mono">${h.amount}</span></div>`
                 ).join('');
             } else {
                 histEl.classList.add('hidden');
@@ -575,23 +601,58 @@
         const addPlayer = () => {
             const name = els.playerName.value.trim().substring(0, CONFIG.MAX_NAME_LENGTH);
             const stack = parseInt(els.playerStack.value) || CONFIG.DEFAULT_STACK;
-            if (!name) return toast('Enter a player name', 'error');
-            if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) return toast('Name: letters, numbers, spaces, - and _ only', 'error');
-            if (state.players.length >= CONFIG.MAX_PLAYERS) return toast(`Maximum ${CONFIG.MAX_PLAYERS} players`, 'error');
-            if (stack <= 0 || isNaN(stack)) return toast('Enter a valid stack amount', 'error');
+            if (!name) return toast(I18n.t('Please enter a player name'), 'error');
+            if (!/^[\p{Script=Han}a-zA-Z0-9\s\-_]+$/u.test(name)) return toast(I18n.t('Name can only contain Chinese characters, letters, numbers, spaces, - and _'), 'error');
+            if (state.players.length >= CONFIG.MAX_PLAYERS) return toast(I18n.t('Maximum {count} players', { count: CONFIG.MAX_PLAYERS }), 'error');
+            if (stack <= 0 || isNaN(stack)) return toast(I18n.t('Please enter a valid stack amount'), 'error');
             state.players.push({ name, stack, bet: 0, folded: false, handContrib: 0 });
             els.playerName.value = '';
             render();
         };
 
-        // ── Remove player (only when busted and round not active) ─
+        // ── Rename player ────────────────────────────────────────
+        const openRenameModal = idx => {
+            if (!state.players[idx]) return;
+            _renamePlayerIdx = idx;
+            $('renamePlayerName').value = state.players[idx].name;
+            $('renamePlayerModal').classList.add('active');
+            $('renamePlayerName').focus();
+            $('renamePlayerName').select();
+        };
+
+        const closeRenameModal = () => {
+            $('renamePlayerModal').classList.remove('active');
+            const button = els.players.querySelector(`[data-action="rename"][data-idx="${_renamePlayerIdx}"]`);
+            _renamePlayerIdx = -1;
+            if (button) button.focus();
+        };
+
+        const confirmRename = () => {
+            const player = state.players[_renamePlayerIdx];
+            if (!player) return;
+            const name = $('renamePlayerName').value.trim();
+            if (!name) return toast(I18n.t('Please enter a player name'), 'error');
+            if (name.length > CONFIG.MAX_NAME_LENGTH) return toast(I18n.t('Name must be at most {count} characters', { count: CONFIG.MAX_NAME_LENGTH }), 'error');
+            if (!/^[\p{Script=Han}a-zA-Z0-9\s\-_]+$/u.test(name)) return toast(I18n.t('Name can only contain Chinese characters, letters, numbers, spaces, - and _'), 'error');
+            player.name = name;
+            render();
+            saveState();
+            closeRenameModal();
+            toast(I18n.t('Player name updated'));
+        };
+
+        // ── Remove player (only when round not active) ────────────
         const removePlayer = idx => {
+            if (state.roundActive) return toast(I18n.t('Cannot remove a player during a hand — finish or reset the hand first'), 'error');
+            if (!state.players[idx]) return;
             const name = state.players[idx].name;
             state.players.splice(idx, 1);
+            if (idx < state.buttonPosition) state.buttonPosition--;
             if (state.buttonPosition >= state.players.length)
-                state.buttonPosition = Math.max(0, state.players.length - 1);
-            toast(`${name} eliminated`, 'error');
+                state.buttonPosition = 0;
+            toast(I18n.t('{name} removed', { name }), 'error');
             render();
+            saveState();
         };
 
         // ── Rebuy modal ──────────────────────────────────────────
@@ -610,9 +671,9 @@
         const confirmRebuy = () => {
             if (_rebuyPlayerIdx < 0) return;
             const amount = parseInt($('rebuyAmount').value);
-            if (isNaN(amount) || amount <= 0) return toast('Enter a valid rebuy amount', 'error');
+            if (isNaN(amount) || amount <= 0) return toast(I18n.t('Please enter a valid rebuy amount'), 'error');
             state.players[_rebuyPlayerIdx].stack += amount;
-            toast(`${state.players[_rebuyPlayerIdx].name} rebuys ${amount.toLocaleString()}`, 'win');
+            toast(I18n.t('{name} rebought {amount} chips', { name: state.players[_rebuyPlayerIdx].name, amount: amount.toLocaleString() }), 'win');
             closeRebuyModal();
             render();
         };
@@ -620,9 +681,9 @@
         // ── Start round ──────────────────────────────────────────
         const startRound = () => {
             if (state.players.length < CONFIG.MIN_PLAYERS)
-                return toast(`Need at least ${CONFIG.MIN_PLAYERS} players`, 'error');
+                return toast(I18n.t('Need at least {count} players', { count: CONFIG.MIN_PLAYERS }), 'error');
             if (state.players.filter(p => p.stack > 0).length < CONFIG.MIN_PLAYERS)
-                return toast('Not enough players with chips — rebuy or remove busted players', 'error');
+                return toast(I18n.t('Not enough players with chips — rebuy or remove eliminated players'), 'error');
 
             state.roundActive = true; state.pot = 0; state.street = 'preflop';
             state.handCount++;
@@ -669,7 +730,7 @@
 
             if (state.street === 'showdown') {
                 state.toAct = new Set();
-                toast('Showdown — award the pot', 'win');
+                toast(I18n.t('Showdown — award the pot'), 'win');
                 render(); return;
             }
 
@@ -690,10 +751,10 @@
         const bet = () => {
             if (!state.roundActive) return;
             const amount = parseInt(els.amount.value);
-            if (isNaN(amount) || amount <= 0) return toast('Enter a valid bet amount', 'error');
+            if (isNaN(amount) || amount <= 0) return toast(I18n.t('Please enter a valid bet amount'), 'error');
             const p = state.players[state.currentPlayerIndex];
-            if (state.currentBet > 0) return toast('Bet already placed — use Raise', 'error');
-            if (amount > p.stack)     return toast('Not enough chips', 'error');
+            if (state.currentBet > 0) return toast(I18n.t('There is already a bet — use Raise instead'), 'error');
+            if (amount > p.stack)     return toast(I18n.t('Not enough chips'), 'error');
             addChips(p, amount);
             state.currentBet = amount; state.minRaise = amount;
             rebuildToAct(state.currentPlayerIndex);
@@ -703,13 +764,13 @@
         const raise = () => {
             if (!state.roundActive) return;
             const raiseAmt = parseInt(els.amount.value);
-            if (isNaN(raiseAmt) || raiseAmt <= 0) return toast('Enter a valid raise amount', 'error');
+            if (isNaN(raiseAmt) || raiseAmt <= 0) return toast(I18n.t('Please enter a valid raise amount'), 'error');
             if (state.minRaise > 0 && raiseAmt < state.minRaise)
-                return toast(`Minimum raise is ${state.minRaise}`, 'error');
+                return toast(I18n.t('Minimum raise is {amount}', { amount: state.minRaise }), 'error');
             const p = state.players[state.currentPlayerIndex];
             const toCall = state.currentBet - p.bet;
             const needed = toCall + raiseAmt;
-            if (needed > p.stack) return toast('Not enough chips', 'error');
+            if (needed > p.stack) return toast(I18n.t('Not enough chips'), 'error');
             addChips(p, needed);
             const prev = state.currentBet;
             state.currentBet = p.bet; state.minRaise = p.bet - prev;
@@ -728,7 +789,7 @@
         const check = () => {
             if (!state.roundActive) return;
             if (state.players[state.currentPlayerIndex].bet < state.currentBet)
-                return toast('Cannot check — must call or fold', 'error');
+                return toast(I18n.t('Cannot check — must call or fold'), 'error');
             state.toAct.delete(state.currentPlayerIndex);
             nextPlayer();
         };
@@ -749,7 +810,7 @@
                 winner.stack += winAmt;
                 state.handHistory.push({ hand: state.handCount, winner: winner.name, amount: winAmt });
                 endRound();
-                toast(`${winner.name} wins ${winAmt}!`, 'win');
+                toast(I18n.t('{name} wins {amount}!', { name: winner.name, amount: winAmt }), 'win');
                 return;
             }
             if (state.toAct.size === 0) { advanceRound(); return; }
@@ -789,8 +850,8 @@
 
         // ── Award pot modal (with side pot support) ──────────────
         const openEmptyPotModal = () => {
-            if (state.pot === 0)       return toast('Pot is already empty', 'error');
-            if (!state.players.length) return toast('No players at the table', 'error');
+            if (state.pot === 0)       return toast(I18n.t('The pot is already empty!'), 'error');
+            if (!state.players.length) return toast(I18n.t('No players at the table!'), 'error');
             const pots = computePots();
             const modal = $('emptyPotModal');
 
@@ -798,7 +859,7 @@
                 $('singlePotRow').classList.remove('hidden');
                 $('potSelectorContainer').classList.add('hidden');
                 els.modalPotAmount.textContent = pots[0].amount;
-                els.winnerSelect.innerHTML = '<option value="">Choose a player…</option>' +
+                els.winnerSelect.innerHTML = `<option value="">${I18n.t('Choose a player…')}</option>` +
                     pots[0].eligible.map(i =>
                         `<option value="${i}">${state.players[i].name} (${state.players[i].stack.toLocaleString()})</option>`
                     ).join('');
@@ -808,11 +869,11 @@
                 $('potSelectorContainer').innerHTML = pots.map((pot, pi) => `
                     <div class="pot-selector-row">
                         <div class="pot-preview">
-                            <span class="muted">${pi === 0 ? 'Main Pot' : `Side Pot ${pi}`}</span>
+                            <span class="muted">${pi === 0 ? I18n.t('Main Pot') : I18n.t('Side Pot {number}', { number: pi })}</span>
                             <span class="pot-amount mono">${pot.amount}</span>
                         </div>
                         <select class="side-pot-select" data-pot="${pi}">
-                            <option value="">Choose winner…</option>
+                            <option value="">${I18n.t('Choose winner…')}</option>
                             ${pot.eligible.map(i =>
                                 `<option value="${i}">${state.players[i].name} (${state.players[i].stack.toLocaleString()})</option>`
                             ).join('')}
@@ -834,7 +895,7 @@
 
             if (isSingle) {
                 const idx = els.winnerSelect.value;
-                if (idx === '') return toast('Select a player', 'error');
+                if (idx === '') return toast(I18n.t('Please select a player!'), 'error');
                 const winner = state.players[parseInt(idx)];
                 const amt = state.pot;
                 els.pot.style.animation = 'potCollect .5s ease-out';
@@ -844,7 +905,7 @@
                     els.pot.style.animation = '';
                     closeEmptyPotModal();
                     endRound();
-                    toast(`${winner.name} wins ${amt}!`, 'win');
+                    toast(I18n.t('{name} wins {amount}!', { name: winner.name, amount: amt }), 'win');
                 }, 500);
             } else {
                 const selects = [...document.querySelectorAll('.side-pot-select')];
@@ -852,7 +913,7 @@
                 let valid = true;
                 selects.forEach((sel, pi) => {
                     if (sel.value === '') {
-                        toast(`Select a winner for ${pi === 0 ? 'the main pot' : `side pot ${pi}`}`, 'error');
+                        toast(pi === 0 ? I18n.t('Select a winner for the main pot') : I18n.t('Select a winner for side pot {number}', { number: pi }), 'error');
                         valid = false;
                     }
                 });
@@ -922,11 +983,21 @@
         $('rebuyAmount').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); confirmRebuy(); } });
         $('timerBtn').onclick        = () => state.tournament.active ? stopTimer() : startTimer();
 
-        // Event delegation for player Rebuy / Remove buttons
+        $('cancelRename').onclick   = closeRenameModal;
+        $('confirmRename').onclick  = confirmRename;
+        $('renamePlayerModal').onclick = e => { if (e.target === $('renamePlayerModal')) closeRenameModal(); };
+        $('renamePlayerModal').addEventListener('keydown', e => {
+            if (e.isComposing) return;
+            if (e.key === 'Enter') { e.preventDefault(); confirmRename(); }
+            if (e.key === 'Escape') { e.preventDefault(); closeRenameModal(); }
+        });
+
+        // Event delegation for player Rename / Rebuy / Remove buttons
         els.players.addEventListener('click', e => {
             const btn = e.target.closest('[data-action]');
             if (!btn) return;
             const idx = parseInt(btn.dataset.idx);
+            if (btn.dataset.action === 'rename') openRenameModal(idx);
             if (btn.dataset.action === 'rebuy')  openRebuyModal(idx);
             if (btn.dataset.action === 'remove') removePlayer(idx);
         });
@@ -951,10 +1022,20 @@
             }
             if (state.tournament.sb) els.smallBlind.value = state.tournament.sb;
             if (state.tournament.bb) els.bigBlind.value   = state.tournament.bb;
-            if (state.players.length > 0) toast('Game restored — welcome back!');
+            if (state.players.length > 0) toast(I18n.t('Welcome back — session restored!'));
         }
         render();
-    </script>
+
+        // Repaint display copy only; keep the hand, inputs and modal selections.
+        document.addEventListener('languagechange', () => {
+            render();
+            if (els.emptyPotModal.classList.contains('active')) {
+                const selected = [...els.emptyPotModal.querySelectorAll('select')].map(el => el.value);
+                openEmptyPotModal();
+                els.emptyPotModal.querySelectorAll('select').forEach((el, i) => { el.value = selected[i] || ''; });
+            }
+        });
+</script>
 
     <script>
         if ('serviceWorker' in navigator) {
@@ -966,8 +1047,8 @@
     </script>
 
     <footer>
-        <p>Free poker tracker · No registration · Works on any device</p>
-        <p><a href="about.html">About</a> · <a href="guide.html">How to Play</a> · <a href="blog.html">Strategy</a></p>
+        <p><span data-i18n="index.49">Free poker tracker · No registration · Works on any device</span></p>
+        <p><a href="about.html"><span data-i18n="index.3">About</span></a> · <a href="guide.html"><span data-i18n="index.50">How to Play</span></a> · <a href="blog.html"><span data-i18n="index.5">Strategy</span></a></p>
     </footer>
 </body>
 </html>

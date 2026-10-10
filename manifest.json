@@ -1,7 +1,8 @@
 {
-  "name": "Live Poker Tracker - Free Poker Chip Counter",
+  "name": "Live Poker Tracker",
   "short_name": "Poker Tracker",
-  "description": "Free online poker tracker for managing chips, blinds, and game state. Perfect for home poker games and tournaments.",
+  "description": "Free Texas Hold'em chip tracker, blinds and pot manager. Works offline.",
+  "lang": "en",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b0b0d",
@@ -27,7 +28,11 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["games", "entertainment", "utilities"],
+  "categories": [
+    "games",
+    "entertainment",
+    "utilities"
+  ],
   "screenshots": [],
   "related_applications": [],
   "prefer_related_applications": false

@@ -17,26 +17,26 @@
     </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Multiplayer Poker - Connect & Play Online | Live Poker Tracker</title>
-    <meta name="description" content="Connect to multiplayer poker games with friends. Host or join online poker rooms using our free peer-to-peer poker tracker. No registration required.">
-    <meta name="keywords" content="multiplayer poker, online poker room, poker multiplayer, play poker online with friends, peer to peer poker, online poker game">
+    <title data-i18n="connect.0">Multiplayer Poker - Connect & Play Online | Live Poker Tracker</title>
+    <meta name="description" content="Connect to multiplayer poker games with friends. Host or join online poker rooms using our free peer-to-peer poker tracker. No registration required." data-i18n-attributes="{&quot;content&quot;: &quot;connect.meta.description&quot;}">
+    <meta name="keywords" content="multiplayer poker, online poker room, poker multiplayer, play poker online with friends, peer to peer poker, online poker game" data-i18n-attributes="{&quot;content&quot;: &quot;connect.meta.keywords&quot;}">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://livepokerchips.com/connect.html">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Multiplayer Poker — Host or Join an Online Poker Room">
-    <meta property="og:description" content="Start or join a free multiplayer poker game with friends. No registration, no download — just share a 6-character room code and play Texas Hold'em online.">
+    <meta property="og:title" content="Multiplayer Poker — Host or Join an Online Poker Room" data-i18n-attributes="{&quot;content&quot;: &quot;connect.meta.og:title&quot;}">
+    <meta property="og:description" content="Start or join a free multiplayer poker game with friends. No registration, no download — just share a 6-character room code and play Texas Hold'em online." data-i18n-attributes="{&quot;content&quot;: &quot;connect.meta.og:description&quot;}">
     <meta property="og:url" content="https://livepokerchips.com/connect.html">
     <meta property="og:image" content="https://livepokerchips.com/icon-512.png">
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
-    <meta property="og:site_name" content="Live Poker Chips">
-    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="Live Poker Chips" data-i18n-attributes="{&quot;content&quot;: &quot;connect.meta.og:site_name&quot;}">
+    <meta property="og:locale" content="en_US" data-i18n-attributes="{&quot;content&quot;: &quot;connect.meta.og:locale&quot;}">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Multiplayer Poker — Play Online with Friends">
-    <meta name="twitter:description" content="Host or join a free online poker room. No registration required — just share a room code.">
+    <meta name="twitter:title" content="Multiplayer Poker — Play Online with Friends" data-i18n-attributes="{&quot;content&quot;: &quot;connect.meta.twitter:title&quot;}">
+    <meta name="twitter:description" content="Host or join a free online poker room. No registration required — just share a room code." data-i18n-attributes="{&quot;content&quot;: &quot;connect.meta.twitter:description&quot;}">
     <meta name="twitter:image" content="https://livepokerchips.com/icon-512.png">
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -47,7 +47,8 @@
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         /* Connect page specific styles */
-        body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+        body{min-height:100vh}
+        .connect-main{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 64px);padding:24px}
         .connect-box{background:var(--panel);padding:44px 40px;border-radius:24px;border:1px solid var(--line);box-shadow:0 24px 64px rgba(0,0,0,0.5);text-align:center;max-width:460px;width:100%;animation:fadeIn .5s ease-out}
         .lobby-mark{width:56px;height:56px;border-radius:50%;margin:0 auto 22px;position:relative;background:radial-gradient(circle at 38% 34%, #f3d488, var(--gold) 55%, var(--gold-d));box-shadow:0 6px 18px rgba(231,189,92,.25), inset 0 0 0 4px rgba(0,0,0,.4)}
         .lobby-mark::after{content:"";position:absolute;inset:10px;border-radius:50%;border:2px dashed rgba(0,0,0,.5)}
@@ -68,30 +69,48 @@
         @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
         @media(max-width:768px){.connect-box{padding:32px 22px}h1{font-size:23px}}
     </style>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
 </head>
 <body>
+    <header role="banner" class="site-header">
+        <a href="index.html" class="brand">
+            <span class="chip-mark"></span>
+            <span class="wordmark"><span data-i18n="index.1">LIVE</span><b><span data-i18n="index.2">POKER</span></b></span>
+        </a>
+        <nav role="navigation">
+            <a href="index.html"><span data-i18n="Tracker">Tracker</span></a>
+            <a href="about.html"><span data-i18n="index.3">About</span></a>
+            <a href="guide.html"><span data-i18n="index.4">Guide</span></a>
+            <a href="blog.html"><span data-i18n="index.5">Strategy</span></a>
+            <a href="connect.html" aria-current="page"><span data-i18n="index.6">Multiplayer</span></a>
+        </nav>
+    <div class="language-control"><label for="languageSelect">Language / 语言</label><select id="languageSelect" aria-label="Language"><option value="en">English</option><option value="zh-CN">简体中文</option></select></div>
+    </header>
+    <main class="connect-main">
     <div class="connect-box">
         <div class="lobby-mark"></div>
-        <h1>Play together, online</h1>
-        <p class="sub">Host a room or join with a code. Every device stays in sync in real time — no accounts, no server.</p>
+        <h1><span data-i18n="connect.1">Play together, online</span></h1>
+        <p class="sub"><span data-i18n="connect.2">Host a room or join with a code. Every device stays in sync in real time — no accounts, no server.</span></p>
 
-        <label class="field-label" for="playerName">Your name</label>
-        <input id="playerName" placeholder="e.g. Quinn" maxlength="20" autocomplete="off">
-        <button id="hostGame">Host New Game</button>
+        <label class="field-label" for="playerName"><span data-i18n="connect.3">Your name</span></label>
+        <input id="playerName" placeholder="e.g. Quinn" maxlength="20" autocomplete="off" data-i18n-attributes="{&quot;placeholder&quot;: &quot;connect.4&quot;}">
+        <button id="hostGame"><span data-i18n="connect.5">Host New Game</span></button>
 
-        <div class="divider">or join one</div>
+        <div class="divider"><span data-i18n="connect.6">or join one</span></div>
 
-        <label class="field-label" for="joinCode">Room code</label>
-        <input id="joinCode" placeholder="6-CHAR CODE" autocomplete="off">
-        <button id="joinGame">Join Game</button>
+        <label class="field-label" for="joinCode"><span data-i18n="connect.7">Room code</span></label>
+        <input id="joinCode" placeholder="6-CHAR CODE" autocomplete="off" data-i18n-attributes="{&quot;placeholder&quot;: &quot;connect.8&quot;}">
+        <button id="joinGame"><span data-i18n="connect.9">Join Game</span></button>
 
-        <div id="status" class="status">Not connected</div>
+        <div id="status" class="status"><span data-i18n="connect.10">Not connected</span></div>
 
         <div class="lobby-foot">
-            <a href="index.html">← Single device</a>
-            <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener">Support the dev</a>
+            <a href="index.html"><span data-i18n="connect.11">← Single device</span></a>
+            <a href="https://www.buymeacoffee.com/quinn_dose_tech" target="_blank" rel="noopener"><span data-i18n="connect.12">Support the dev</span></a>
         </div>
     </div>
+    </main>
 
     <script>
         'use strict';
@@ -100,8 +119,8 @@
 
         document.getElementById('hostGame').onclick=()=>{
             const name=nameEl.value.trim();
-            if(!name)return alert('Please enter your name first!');
-            if(!/^[a-zA-Z0-9\s\-_]+$/.test(name))return alert('Name can only contain letters, numbers, spaces, - and _');
+            if(!name)return alert(I18n.t('Please enter your name first!'));
+            if(!/^[\p{Script=Han}a-zA-Z0-9\s\-_]+$/u.test(name))return alert(I18n.t('Name can only contain Chinese characters, letters, numbers, spaces, - and _'));
             const roomCode=Math.random().toString(36).substring(2,8).toUpperCase();
             sessionStorage.setItem('pokerRole','host');
             sessionStorage.setItem('pokerRoomCode',roomCode);
@@ -111,10 +130,10 @@
 
         document.getElementById('joinGame').onclick=()=>{
             const name=nameEl.value.trim();
-            if(!name)return alert('Please enter your name first!');
-            if(!/^[a-zA-Z0-9\s\-_]+$/.test(name))return alert('Name can only contain letters, numbers, spaces, - and _');
+            if(!name)return alert(I18n.t('Please enter your name first!'));
+            if(!/^[\p{Script=Han}a-zA-Z0-9\s\-_]+$/u.test(name))return alert(I18n.t('Name can only contain Chinese characters, letters, numbers, spaces, - and _'));
             const code=document.getElementById('joinCode').value.trim().toUpperCase();
-            if(!code)return alert('Please enter a room code');
+            if(!code)return alert(I18n.t('Please enter a room code'));
             sessionStorage.setItem('pokerRole','client');
             sessionStorage.setItem('pokerRoomCode',code);
             sessionStorage.setItem('pokerPlayerName',name);

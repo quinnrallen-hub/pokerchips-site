@@ -19,6 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Common modification workflows
 
 ### Tech Stack
+
 - **Frontend**: Pure HTML, CSS, JavaScript (no frameworks or build tools)
 - **Multiplayer**: PeerJS library (CDN: unpkg.com)
 - **Hosting**: GitHub Pages with custom CNAME
@@ -41,6 +42,7 @@ The site consists of 6 main HTML pages, each self-contained with inline JavaScri
 ### State Management
 
 **Single-player (index.html):**
+
 ```javascript
 state = {
   players: [],           // Array of {name, stack, bet, folded, cards}
@@ -59,6 +61,7 @@ state = {
 ```
 
 **Multiplayer (multiplayer.html):**
+
 - Extends single-player state with `sidePots: []` for all-in scenarios
 - Uses PeerJS for state synchronization between connected devices
 - Host creates room with ID `poker-{roomCode}`, clients connect via 6-char code
@@ -67,6 +70,7 @@ state = {
 ### Game Logic Flow
 
 **Texas Hold'em Implementation:**
+
 1. **Blinds Posting**: Small blind (BTN+1) and big blind (BTN+2) auto-post when enabled
    - Heads-up exception: Button posts SB, other posts BB
 2. **Betting Rounds**: Action tracked via `actionCount` counter
@@ -89,6 +93,7 @@ Both `index.html` and `multiplayer.html` implement identical game logic:
 - `render()` - Updates DOM with animations (chip counts, cards, player states)
 
 **Critical Implementation Details:**
+
 - `isBettingRoundComplete()` checks if all active players have equal bets AND actionCount >= active players
 - Minimum raise enforcement: stores previous bet size in `state.minRaise`
 - Animation system: Uses `animateNumber()` with threshold (100 chips) for smooth transitions
@@ -113,6 +118,7 @@ npx http-server -p 8000
 ```
 
 **Testing Multiplayer:**
+
 - Open two browser windows/tabs to same localhost
 - One acts as host, other joins with room code
 - Use browser DevTools Network tab → "Offline" to test PWA offline mode
@@ -138,11 +144,13 @@ const CACHE_NAME = 'poker-tracker-v6';  // Current: v5, increment when changing 
 ```
 
 **Version History:**
+
 - v1-v3: Initial implementations
 - v4: Added error handling improvements
 - v5: Added AdSense ad placements (current)
 
 Cached files list in `sw.js`:
+
 - All HTML pages (/, /index.html, /connect.html, /multiplayer.html, /guide.html, /blog.html, /about.html)
 - /styles.css, /favicon.svg, /icon-192.png, /icon-512.png, /apple-touch-icon.png
 
@@ -151,6 +159,7 @@ Cached files list in `sw.js`:
 ### Inline JavaScript Pattern
 
 All game logic is embedded in `<script>` tags at the bottom of each HTML file. This deliberate choice:
+
 - Eliminates build step complexity
 - Ensures single-file portability
 - Simplifies GitHub Pages deployment
@@ -164,6 +173,7 @@ All game logic is embedded in `<script>` tags at the bottom of each HTML file. T
 ### JavaScript Patterns
 
 **Configuration Constants:**
+
 ```javascript
 const CONFIG = {
   DEFAULT_STACK: 1000,
@@ -179,12 +189,14 @@ const CONFIG = {
 ```
 
 **Error Handling:**
+
 - All critical functions wrapped in try-catch
 - Null checks before DOM manipulation (`if(!el)return;`)
 - User-facing alerts for validation errors
 - Console logging for debugging (`console.error()`)
 
 **Element Access:**
+
 ```javascript
 const $=(id)=>document.getElementById(id);  // Shorthand helper
 const els = {  // Cached element references
@@ -199,6 +211,7 @@ const els = {  // Cached element references
 ### PeerJS Connection Flow
 
 **Host (connect.html → multiplayer.html):**
+
 1. Generates 6-character room code (uppercase alphanumeric)
 2. Creates peer with ID `poker-{roomCode}`
 3. Stores role/code/name in `sessionStorage`
@@ -206,6 +219,7 @@ const els = {  // Cached element references
 5. Broadcasts state changes via `broadcastState()`
 
 **Client (connect.html → multiplayer.html):**
+
 1. Prompts for name and room code
 2. Creates anonymous peer
 3. Connects to `poker-{roomCode}`
@@ -213,11 +227,13 @@ const els = {  // Cached element references
 5. Receives state updates from host
 
 **State Sync:**
+
 - Host → Clients: `{type:'state', state}` on every game action
 - Client → Host: `{type:'state', state}` for their actions
 - Host rebroadcasts client state to all other clients
 
 ### STUN Servers
+
 ```javascript
 config: {
   iceServers: [
@@ -233,6 +249,7 @@ config: {
 ### Meta Tags Pattern
 
 Every page includes:
+
 - Open Graph tags (og:title, og:description, og:url)
 - Twitter Card tags
 - Structured data (JSON-LD) for WebApplication schema (index.html only)
@@ -241,10 +258,12 @@ Every page includes:
 ### Google Services
 
 **Analytics (gtag.js):**
+
 - ID: G-0J9PC4FRSB
 - Preconnect hints for performance
 
 **AdSense:**
+
 - Account: ca-pub-6367769242716376
 - Async script loading with crossorigin="anonymous"
 - **10 strategic ad placements** across content pages:
@@ -256,6 +275,7 @@ Every page includes:
 - Placements follow natural content breaks for better CTR
 
 **Ad Placement Strategy:**
+
 ```html
 <div style="text-align:center; margin:40px auto; max-width:728px;">
   <ins class="adsbygoogle"
@@ -272,6 +292,7 @@ Every page includes:
 ### Affiliate Links
 
 Amazon Associates tag: `quinnstech-20`
+
 - Used in about.html product recommendations (poker chips, cards, tables, books)
 - Links include `rel="nofollow noopener"`
 - Commission rate: 4-10% per sale
@@ -281,18 +302,21 @@ Amazon Associates tag: `quinnstech-20`
 ### Adding AdSense Ad Units
 
 **Best Locations for New Ads:**
+
 1. Between content sections (natural reading breaks)
 2. After user commits (e.g., after table of contents)
 3. Mid-page on long articles (50% scroll depth)
 4. Before high-value content (FAQ, tutorials)
 
 **Ad Placement Guidelines:**
+
 - Max 3-4 ads per page for optimal CTR
 - Use 40px margin for breathing room
 - Avoid placing ads directly after headers
 - Test placement after 2 weeks and optimize
 
 **Current Ad Inventory:**
+
 - about.html: 3 placements (room for 1 more after "How to Use" section)
 - blog.html: 4 placements (optimal, don't add more)
 - guide.html: 3 placements (could add 1 after "Tournament vs Cash Game")
@@ -316,6 +340,7 @@ Amazon Associates tag: `quinnstech-20`
 The repository includes the following key files:
 
 **HTML Pages:**
+
 - `index.html` - Single-player game tracker
 - `multiplayer.html` - Multiplayer game room
 - `connect.html` - Multiplayer lobby
@@ -324,6 +349,7 @@ The repository includes the following key files:
 - `blog.html` - Strategy articles
 
 **Assets & Configuration:**
+
 - `styles.css` - Shared stylesheet
 - `sw.js` - Service Worker for PWA
 - `manifest.json` - PWA manifest
@@ -332,6 +358,7 @@ The repository includes the following key files:
 - `CNAME` - Custom domain configuration
 
 **Documentation:**
+
 - `README.md` - Public project documentation (user-facing)
 - `CLAUDE.md` - AI development guidance (this file)
 - `.gitignore` - Git ignore rules (currently ignores `*.md` - use `git add -f` for markdown files)
@@ -339,20 +366,24 @@ The repository includes the following key files:
 ### Modifying Game Rules
 
 **Blind Structure:**
+
 - Edit `startRound()` function in index.html:629 and multiplayer.html:418
 - Heads-up logic: lines 391-401 (index.html)
 
 **Betting Rules:**
+
 - Minimum raise validation: `raise()` function, checks `state.minRaise`
 - All-in handling: `call()` uses `Math.min(toCall, p.stack)`
 
 **Card Dealing:**
+
 - Burn card logic: `autoAdvanceStreet()`, line 336
 - Community card counts: `cardsToAdd` object (flop:3, turn:1, river:1)
 
 ### Styling Changes
 
 **Theme Colors:**
+
 ```css
 :root {
   --primary: #ffd166;        /* Yellow accent */
@@ -364,6 +395,7 @@ The repository includes the following key files:
 ```
 
 **Animation Customization:**
+
 - Card slide-in: `.new-card` animation at styles.css:477
 - Chip pulse: `.chip-update` animation at styles.css:537
 - Active player glow: `.player.active` at styles.css:218
@@ -391,13 +423,14 @@ The repository includes the following key files:
 ### Traffic to Revenue Estimates
 
 | Daily Visitors | Monthly Earnings (AdSense) | + Amazon Affiliate | Total Est. |
-|----------------|---------------------------|-------------------|------------|
+| ---------------- | --------------------------- | ------------------- | ------------ |
 | 100-500 | $10-120 | $5-30 | $15-150 |
 | 500-1,000 | $45-240 | $20-80 | $65-320 |
 | 1,000-5,000 | $90-1,200 | $50-200 | $140-1,400 |
 | 5,000-10,000 | $450-2,400 | $100-500 | $550-2,900 |
 
 **To increase revenue:**
+
 1. Drive more traffic (SEO, social media, poker forums)
 2. Create more content pages (more ad inventory)
 3. Add more Amazon affiliate products
@@ -407,17 +440,21 @@ The repository includes the following key files:
 ## Important Notes
 
 ### Browser Compatibility
+
 - Requires modern JavaScript (ES6+)
 - Uses CSS custom properties (no IE11 support)
 - Service Worker requires HTTPS (works on localhost and GitHub Pages)
 
 ### Session Storage Usage
+
 Multiplayer pages use `sessionStorage` for room info:
+
 - `pokerRole`: 'host' or 'client'
 - `pokerRoomCode`: 6-character room ID
 - `pokerPlayerName`: User's display name
 
 ### Known Limitations
+
 - No hand evaluation (winner determined manually)
 - No betting history/log
 - No player elimination tracking
@@ -428,12 +465,14 @@ Multiplayer pages use `sessionStorage` for room info:
 ## Recent Updates
 
 ### November 2025 - AdSense Optimization
+
 - Added 10 strategic ad placements across content pages
 - Optimized for CTR with responsive auto format
 - Service Worker updated to v5
 - Expected revenue increase: 3-5x vs auto-ads only
 
 ### November 2025 - Bug Fixes & Performance
+
 - Enhanced error handling in JavaScript (try-catch blocks, null checks)
 - Improved Service Worker error logging
 - Added focus-visible states for accessibility

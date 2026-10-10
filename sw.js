@@ -1,4 +1,4 @@
-const CACHE_NAME = 'poker-tracker-v8';
+const CACHE_NAME = 'poker-tracker-v15-navigation';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,6 +8,10 @@ const urlsToCache = [
   '/blog.html',
   '/about.html',
   '/styles.css',
+  '/translations.js',
+  '/i18n.js',
+  '/manifest.json',
+  '/manifest.zh-CN.json',
   '/favicon.svg',
   '/icon-192.png',
   '/icon-512.png',
@@ -74,7 +78,7 @@ self.addEventListener('fetch', event => {
               page || caches.match('/')
             );
           }
-          return new Response('Offline - no cached version available');
+          return new Response('Offline: no cached version available / 当前离线，且没有可用的缓存版本');
         });
       })
   );
